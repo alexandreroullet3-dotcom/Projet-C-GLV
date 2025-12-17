@@ -1,3 +1,3 @@
 int successeur (int n){
-    return n+1;
+    return n+3;
 };
