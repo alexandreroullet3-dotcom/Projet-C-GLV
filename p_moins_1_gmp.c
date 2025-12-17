@@ -35,4 +35,7 @@ int main(){
     printf("Vérification: ");
     mpz_mul(temp, temp, result);
     printf("%d\n",mpz_cmp(N, temp));
+    mpz_clear(N);
+    mpz_clear(result);
+    mpz_clear(temp);
 }
