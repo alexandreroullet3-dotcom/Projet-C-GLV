@@ -1,13 +1,6 @@
-int factoriser_n (int n){
-     int a = 2;
-     for (int i = 2; i < n; i++){
-        int r = algorithme_d_euclide(a-1, n);
-        if ((r != 1) && (r != n)){
-            return r;
-        }
-        a = sq_mult(a, i);
-     }
-}
+#include <stdio.h>
+
+
 
 int sq_mult(int x, unsigned int d){
     int temp=1; int puiss=x;
@@ -28,4 +21,21 @@ int algorithme_d_euclide(int a, int b){
         return b;
     };
     return algorithme_d_euclide(b, r);
+}
+
+int factoriser_n (int n){
+    int a = 2;
+    for (int i = 2; i < n; i++){
+        int r = algorithme_d_euclide(a-1, n);
+        if ((r != 1) && (r != n)){
+            return r;
+        }
+        a = sq_mult(a, i);
+    }
+    return 1;
+}
+
+int main(){
+    printf("un facteur non trivial est %d\n", factoriser_n(299));
+    return 0;
 }
