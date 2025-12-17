@@ -35,7 +35,8 @@ int factoriser_n (int n){
     return 1;
 }
 
-/*int main(){
-    printf("un facteur non trivial est %d\n", factoriser_n(299));
+int main(){
+    int n = 299;
+    printf("un facteur non trivial est %d\n", factoriser_n(n));
     return 0;
-}*/
+}
