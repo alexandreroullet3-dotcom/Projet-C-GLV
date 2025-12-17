@@ -25,11 +25,14 @@ int main(){
     mpz_init(result);
     mpz_init(temp);
     factoriser_rsa(result, N);
+    printf("Un facteur non trivial est ");
     mpz_out_str(stdout, 10, result);
     printf("\n");
+    printf("L'autre facteur non trivial est ");
     mpz_cdiv_q(temp, N, result);
     mpz_out_str(stdout, 10, temp);
     printf("\n");
+    printf("Vérification: ");
     mpz_mul(temp, temp, result);
     printf("%d\n",mpz_cmp(N, temp));
 }
