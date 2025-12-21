@@ -1,5 +1,5 @@
-#ifndef EC_H
-#define EC_H
+#ifndef EC_STRUCT_H
+#define EC_STRUCT_H
 #include <gmp.h>
 
 // Structure point affine
