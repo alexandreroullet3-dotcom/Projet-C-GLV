@@ -11,8 +11,6 @@ EC_add_proj.c \
 EC_square_and_multiply_affine.c \
 EC_square_and_multiply_proj.c \
 EC_struct.c \
-polar_rho.c \
-p_moins_1_gmp.c \
 main.c
 
 OBJS := $(SRCS:.c=.o)

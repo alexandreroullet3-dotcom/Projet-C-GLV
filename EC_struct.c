@@ -85,9 +85,6 @@ void proj_to_affine(ECPointAffine *R,
     mpz_clears(Zinv, Z2, Z3, NULL);
 }
 
-
-
-
 void ec_curve_init(ECCurve *E) {
     mpz_init(E->p);
     mpz_init(E->a);

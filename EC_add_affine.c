@@ -5,8 +5,8 @@ void ec_point_add_affine(ECPointAffine *R,
                   const ECPointAffine *Q,
                   const ECCurve *E)
 {
-    if (P->infinity) { *R = *Q; return; }
-    if (Q->infinity) { *R = *P; return; }
+    if (P->infinity) { ec_point_affine_copy(R, Q);; return; }
+    if (Q->infinity) { ec_point_affine_copy(R, P);; return; }
 
     // P == -Q
     if (mpz_cmp(P->x, Q->x) == 0) {
