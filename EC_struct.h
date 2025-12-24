@@ -28,8 +28,12 @@ typedef struct {
 // Initialisation / nettoyage
 void ec_point_affine_init(ECPointAffine *P);
 void ec_point_affine_clear(ECPointAffine *P);
+void ec_point_affine_copy(ECPointAffine *dst, const ECPointAffine *src);
 void ec_point_proj_init(ECPointProj *P);
 void ec_point_proj_clear(ECPointProj *P);
+void ec_point_proj_copy(ECPointProj *dst, const ECPointProj *src);
+void affine_to_proj(ECPointProj *R, const ECPointAffine *P);
+void proj_to_affine(ECPointAffine *R, const ECPointProj *P, const ECCurve *E);
 void ec_curve_init(ECCurve *E);
 void ec_curve_clear(ECCurve *E);
 
