@@ -2,17 +2,29 @@
 #include "EC_struct.h"
 
 
-void ec_point_init(ECPoint *P) {
+void ec_point_affine_init(ECPointAffine *P) {
     mpz_init(P->x);
     mpz_init(P->y);
     P->infinity = 1;
 }
 
-void ec_point_clear(ECPoint *P) {
+void ec_point_affine_clear(ECPointAffine *P) {
     mpz_clear(P->x);
     mpz_clear(P->y);
 }
 
+void ec_point_proj_init(ECPointProj *P) {
+    mpz_init(P->X);
+    mpz_init(P->Y);
+    mpz_init(P->Z);
+    P->infinity = 1;
+}
+
+void ec_point_proj_clear(ECPointProj *P) {
+    mpz_clear(P->X);
+    mpz_clear(P->Y);
+    mpz_clear(P->Z);
+}
 
 void ec_curve_init(ECCurve *E) {
     mpz_init(E->p);

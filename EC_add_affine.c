@@ -1,8 +1,8 @@
-#include "EC_add.h"
+#include "EC_add_affine.h"
 
-void ec_point_add(ECPoint *R,
-                  const ECPoint *P,
-                  const ECPoint *Q,
+void ec_point_add_affine(ECPointAffine *R,
+                  const ECPointAffine *P,
+                  const ECPointAffine *Q,
                   const ECCurve *E)
 {
     if (P->infinity) { *R = *Q; return; }
@@ -51,8 +51,8 @@ void ec_point_add(ECPoint *R,
 }
 
 
-void ec_point_double(ECPoint *R,
-                     const ECPoint *P,
+void ec_point_double_affine(ECPointAffine *R,
+                     const ECPointAffine *P,
                      const ECCurve *E)
 {
     if (P->infinity) { R->infinity = 1; return; }

@@ -2,7 +2,7 @@
 #define EC_ADD_H 
 #include "EC_struct.h"
 
-void ec_point_add(ECPoint *R, const ECPoint *P, const ECPoint *Q, const ECCurve *E);
+void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P, const ECPointAffine *Q, const ECCurve *E);
 
-void ec_point_double(ECPoint *R, const ECPoint *P, const ECCurve *E);
+void ec_point_double_affine(ECPointAffine *R, const ECPointAffine *P, const ECCurve *E);
 #endif

@@ -7,7 +7,16 @@ typedef struct {
     mpz_t x;
     mpz_t y;
     int infinity; //1 si point à l'infini, 0 sinon
-} ECPoint;
+} ECPointAffine;
+
+// Structure point projectif
+typedef struct {
+    mpz_t X;
+    mpz_t Y;
+    mpz_t Z;
+    int infinity; //1 si point à l'infini, 0 sinon
+} ECPointProj;
+
 
 // Structure courbe
 typedef struct {
@@ -17,8 +26,10 @@ typedef struct {
 } ECCurve;
 
 // Initialisation / nettoyage
-void ec_point_init(ECPoint *P);
-void ec_point_clear(ECPoint *P);
+void ec_point_affine_init(ECPointAffine *P);
+void ec_point_affine_clear(ECPointAffine *P);
+void ec_point_proj_init(ECPointProj *P);
+void ec_point_proj_clear(ECPointProj *P);
 void ec_curve_init(ECCurve *E);
 void ec_curve_clear(ECCurve *E);
 
