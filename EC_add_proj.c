@@ -62,7 +62,7 @@ void ec_point_add_proj(ECPointProj *R,
                   const ECCurve *E)
 {
     if (P->infinity) { ec_point_proj_copy(R, Q);; return; }
-    if (Q->infinity) { ec_point_proj_copy(R, Q);; return; }
+    if (Q->infinity) { ec_point_proj_copy(R, P);; return; }
 
     mpz_t U1, U2, S1, S2, H, Rr;
     mpz_inits(U1, U2, S1, S2, H, Rr, NULL);
