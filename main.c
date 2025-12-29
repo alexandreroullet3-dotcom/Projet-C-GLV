@@ -1,76 +1,112 @@
 #include <stdio.h>
 #include "EC_struct.h"
+#include "EC_add_affine.h"       // N'oublie pas d'inclure les headers affine
+#include "EC_add_proj.h"
 #include "EC_square_and_multiply_proj.h"
 #include "EC_square_and_multiply_affine.h"
 
 int main() {
-    // --- 1. Définir une petite courbe pour test ---
+    // --- 1. Définir la courbe ---
     ECCurve E;
-    mpz_init_set_str(E.p, "9739", 10);  // petit premier pour test
-    mpz_init_set_ui(E.a, 497);
-    mpz_init_set_ui(E.b, 1768);
+    ec_curve_init(&E);
+    mpz_set_str(E.p, "9739", 10);
+    mpz_set_ui(E.a, 497);
+    mpz_set_ui(E.b, 1768);
 
-    // --- 2. Définir un point affine ---
+    // --- 2. Définir le point de départ P ---
     ECPointAffine Pa;
     ec_point_affine_init(&Pa);
     mpz_set_ui(Pa.x, 493);
     mpz_set_ui(Pa.y, 5564);
     Pa.infinity = 0;
 
-    // --- 3. Convertir en projectif ---
+    // Conversion en projectif pour les tests
     ECPointProj Pp;
     ec_point_proj_init(&Pp);
     affine_to_proj(&Pp, &Pa);
 
-    // --- 4. Tester doublement ---
-    ECPointProj Rdouble;
-    ec_point_proj_init(&Rdouble);
-    ec_point_double_proj(&Rdouble, &Pp, &E);
+    gmp_printf("Point P départ : (%Zd, %Zd)\n", Pa.x, Pa.y);
 
-    ECPointAffine Rdouble_aff;
-    ec_point_affine_init(&Rdouble_aff);
-    proj_to_affine(&Rdouble_aff, &Rdouble, &E);
+    // =================================================================
+    // TEST 1 : DOUBLEMENT (2P)
+    // =================================================================
 
-    gmp_printf("2P = (%Zd, %Zd)\n", Rdouble_aff.x, Rdouble_aff.y);
+    // A. Calcul Affine
+    ECPointAffine R_double_aff;
+    ec_point_affine_init(&R_double_aff);
+    ec_point_double_affine(&R_double_aff, &Pa, &E);
+    gmp_printf("[Affine]   2P = (%Zd, %Zd)\n", R_double_aff.x, R_double_aff.y);
 
-    // --- 5. Tester addition ---
-    ECPointProj Radd;
-    ec_point_proj_init(&Radd);
-    ec_point_add_proj(&Radd, &Pp, &Pp, &E);  // P + P
+    // B. Calcul Projectif
+    ECPointProj R_double_proj;
+    ec_point_proj_init(&R_double_proj);
+    ec_point_double_proj(&R_double_proj, &Pp, &E);
+    
+    // Conversion résultat projectif -> affine pour affichage
+    ECPointAffine R_double_proj_conv;
+    ec_point_affine_init(&R_double_proj_conv);
+    proj_to_affine(&R_double_proj_conv, &R_double_proj, &E);
+    gmp_printf("[Projectif] 2P = (%Zd, %Zd)\n", R_double_proj_conv.x, R_double_proj_conv.y);
 
-    ECPointAffine Radd_aff;
-    ec_point_affine_init(&Radd_aff);
-    proj_to_affine(&Radd_aff, &Radd, &E);
+    // =================================================================
+    // TEST 2 : ADDITION (P + P)
+    // =================================================================
 
-    gmp_printf("P + P = (%Zd, %Zd)\n", Radd_aff.x, Radd_aff.y);
+    // A. Calcul Affine
+    ECPointAffine R_add_aff;
+    ec_point_affine_init(&R_add_aff);
+    ec_point_add_affine(&R_add_aff, &Pa, &Pa, &E);
+    gmp_printf("[Affine]   P+P = (%Zd, %Zd)\n", R_add_aff.x, R_add_aff.y);
 
-    // --- 6. Tester multiplication scalaire ---
-    ECPointProj Rmul;
-    ec_point_proj_init(&Rmul);
+    // B. Calcul Projectif
+    ECPointProj R_add_proj;
+    ec_point_proj_init(&R_add_proj);
+    ec_point_add_proj(&R_add_proj, &Pp, &Pp, &E);
+
+    ECPointAffine R_add_proj_conv;
+    ec_point_affine_init(&R_add_proj_conv);
+    proj_to_affine(&R_add_proj_conv, &R_add_proj, &E);
+    gmp_printf("[Projectif] P+P = (%Zd, %Zd)\n", R_add_proj_conv.x, R_add_proj_conv.y);
+
+    // =================================================================
+    // TEST 3 : MULTIPLICATION SCALAIRE (20P)
+    // =================================================================
+
     mpz_t k;
     mpz_init_set_ui(k, 20);
 
-    ec_scalar_mul_proj(&Rmul, &Pp, k, &E);
+    // A. Calcul Affine
+    ECPointAffine R_mul_aff;
+    ec_point_affine_init(&R_mul_aff);
+    ec_scalar_mul_affine(&R_mul_aff, &Pa, k, &E);
+    gmp_printf("[Affine]   20P = (%Zd, %Zd)\n", R_mul_aff.x, R_mul_aff.y);
 
-    ECPointAffine Rmul_aff;
-    ec_point_affine_init(&Rmul_aff);
-    proj_to_affine(&Rmul_aff, &Rmul, &E);
+    // B. Calcul Projectif
+    ECPointProj R_mul_proj;
+    ec_point_proj_init(&R_mul_proj);
+    ec_scalar_mul_proj(&R_mul_proj, &Pp, k, &E);
 
-    gmp_printf("20P = (%Zd, %Zd)\n", Rmul_aff.x, Rmul_aff.y);
+    ECPointAffine R_mul_proj_conv;
+    ec_point_affine_init(&R_mul_proj_conv);
+    proj_to_affine(&R_mul_proj_conv, &R_mul_proj, &E);
+    gmp_printf("[Projectif] 20P = (%Zd, %Zd)\n", R_mul_proj_conv.x, R_mul_proj_conv.y);
 
-    // --- 7. Nettoyage ---
-    ec_point_affine_clear(&Pa);
-    ec_point_proj_clear(&Pp);
-    ec_point_proj_clear(&Rdouble);
-    ec_point_affine_clear(&Rdouble_aff);
-    ec_point_proj_clear(&Radd);
-    ec_point_affine_clear(&Radd_aff);
-    ec_point_proj_clear(&Rmul);
-    ec_point_affine_clear(&Rmul_aff);
+    // --- Nettoyage ---
+    ec_curve_clear(&E);
     mpz_clear(k);
-    mpz_clear(E.p);
-    mpz_clear(E.a);
-    mpz_clear(E.b);
+    
+    ec_point_affine_clear(&Pa);
+    ec_point_affine_clear(&R_double_aff);
+    ec_point_affine_clear(&R_double_proj_conv);
+    ec_point_affine_clear(&R_add_aff);
+    ec_point_affine_clear(&R_add_proj_conv);
+    ec_point_affine_clear(&R_mul_aff);
+    ec_point_affine_clear(&R_mul_proj_conv);
+
+    ec_point_proj_clear(&Pp);
+    ec_point_proj_clear(&R_double_proj);
+    ec_point_proj_clear(&R_add_proj);
+    ec_point_proj_clear(&R_mul_proj);
 
     return 0;
 }
