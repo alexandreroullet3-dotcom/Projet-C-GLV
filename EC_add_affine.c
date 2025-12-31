@@ -1,9 +1,8 @@
 #include "EC_add_affine.h"
 
-
 void ec_point_double_affine(ECPointAffine *R,
-                     const ECPointAffine *P,
-                     const ECCurve *E)
+                            const ECPointAffine *P,
+                            const ECCurve *E)
 {
     if (P->infinity) { R->infinity = 1; return; }
     // Cas y == 0 -> Infini

@@ -1,4 +1,4 @@
-NAME    := ec_crypto
+NAME    := glv
 
 CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -std=c11
@@ -10,8 +10,11 @@ EC_add_affine.c \
 EC_add_proj.c \
 EC_square_and_multiply_affine.c \
 EC_square_and_multiply_proj.c \
+double_scalar_multiplication.c \
+precompute_table.c \
 EC_struct.c \
 EC_endo_phi_GLV.c \
+EC_conversions.c \
 main.c
 
 OBJS := $(SRCS:.c=.o)

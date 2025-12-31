@@ -1,6 +1,7 @@
 #ifndef EC_STRUCT_H
 #define EC_STRUCT_H
 #include <gmp.h>
+#include <stdlib.h>
 
 // Structure point affine
 typedef struct {

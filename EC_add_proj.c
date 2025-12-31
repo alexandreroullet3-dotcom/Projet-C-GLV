@@ -6,6 +6,7 @@ void ec_point_double_proj(ECPointProj *R, const ECPointProj *P, const ECCurve *E
     // 1. Gestion du point à l'infini ou Y=0
     if (P->infinity || mpz_cmp_ui(P->Y, 0) == 0) {
         R->infinity = 1;
+        mpz_set_ui(R->Z, 0);
         return;
     }
 
@@ -87,11 +88,13 @@ void ec_point_add_proj(ECPointProj *R, const ECPointProj *P, const ECPointProj *
 
     // U1 = X1 * Z2^2
     mpz_mul(U1, Q->Z, Q->Z);
+    mpz_mod(U1, U1, E->p);
     mpz_mul(U1, U1, P->X);
     mpz_mod(U1, U1, E->p);
 
     // U2 = X2 * Z1^2
     mpz_mul(U2, P->Z, P->Z);
+    mpz_mod(U2, U2, E->p);
     mpz_mul(U2, U2, Q->X);
     mpz_mod(U2, U2, E->p);
 
@@ -110,6 +113,7 @@ void ec_point_add_proj(ECPointProj *R, const ECPointProj *P, const ECPointProj *
     if (mpz_cmp(U1, U2) == 0) {
         if (mpz_cmp(S1, S2) != 0) {
             R->infinity = 1;
+            mpz_set_ui(R->Z, 0);
         } else {
             ec_point_double_proj(R, P, E);
         }
