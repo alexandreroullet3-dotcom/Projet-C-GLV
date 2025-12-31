@@ -121,7 +121,7 @@ int main() {
     mpz_set_ui(Q.Z, 1);
     Q.infinity = 0;
 
-    mpz_t k;
+
     mpz_init_set_ui(k, 20);
 
     mpz_t l;
