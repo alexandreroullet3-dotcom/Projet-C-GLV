@@ -14,7 +14,7 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     // on commence par decomposer k
     mpz_t k1,k2;
     mpz_inits(k1,k2,NULL);
-    ec_glv_decompose(k1,k2,k,n,lambda,x1,y1,x2,y2);
+    ec_glv_decompose(k1,k2,k,x1,y1,x2,y2);
 
     // on va creer les tables de précalcule
     ECPointProj P2,Q2;
