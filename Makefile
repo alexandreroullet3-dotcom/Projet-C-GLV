@@ -14,6 +14,7 @@ double_scalar_multiplication.c \
 precompute_table.c \
 EC_struct.c \
 EC_endo_phi_GLV.c \
+EC_GLV.c \
 EC_conversions.c \
 main.c
 
