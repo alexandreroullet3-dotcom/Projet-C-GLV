@@ -8,9 +8,8 @@
 
 // Multiplication scalaire GLV  R = k * P
 
-void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve * E, const mpz_t n, 
-                    const mpz_t lambda, const mpz_t x1, const mpz_t y1, const mpz_t x2, const mpz_t y2,
-                    const mpz_t beta){
+void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve * E, const mpz_t x1, 
+                    const mpz_t y1, const mpz_t x2, const mpz_t y2, const mpz_t beta){
     // on commence par decomposer k
     mpz_t k1,k2;
     mpz_inits(k1,k2,NULL);
@@ -46,7 +45,7 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     affine_to_proj(&Q2,&Q_aff);
 
     // passons auprécalcul de la table
-    unsigned int m=2;
+    int m=2;
     ECPointProj **T =precompute_table( &P2, &Q2, m, E);
 
     // on regarde combien de bit il faut pour ecrire k1 et k2 en binaire et on prend le plus grand des deux
