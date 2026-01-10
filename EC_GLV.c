@@ -2,7 +2,7 @@
 #include <gmp.h>
 #include "EC_struct.h"
 #include "EC_add_proj.h"
-#include "EC_endo_GLV.h"
+#include "EC_endo_phi_GLV.h"
 #include "precompute_table.h"
 #include "EC_conversions.h"
 
