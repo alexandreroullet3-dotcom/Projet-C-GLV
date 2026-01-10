@@ -54,8 +54,8 @@ void ec_endo_phi_point_affine(ECPointAffine *Q, const ECPointAffine *P, const EC
 // x1, x2,y1,y2 les vecteur de base du réseau, 
 // calculer à l'aide de l'algorithme d'euclide apliquer sur n et lambda
 // v1=(x1,y1) et v2=(x2,y2) et v=(k,0)
-void ec_glv_decompose(mpz_t k1, mpz_t k2, const mpz_t k, const mpz_t n, const mpz_t lambda,
-                    const mpz_t x1, const mpz_t y1, const mpz_t x2, const mpz_t y2){
+void ec_glv_decompose(mpz_t k1, mpz_t k2, const mpz_t k, const mpz_t x1, const mpz_t y1, 
+                    const mpz_t x2, const mpz_t y2){
     mpz_t det, b1, b2, num, t;
     mpz_inits(det, b1, b2, num, t, NULL);
 
