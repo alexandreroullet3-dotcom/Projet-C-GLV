@@ -166,122 +166,167 @@ int main() {
     
 //////////////////  TEST de la fonction GLV //////////////////////////
 
-// 1. Initialisation des variables GMP
-    mpz_t p, n, lambda, beta, k, x1, y1, x2, y2;
-    mpz_inits(p, n, lambda, beta, k, x1, y1, x2, y2, NULL);
+    // 1. Initialisation des variables
 
-    // 2. Initialisation des Points
-    ECPointProj P, R_glv;
-    ec_point_proj_init(&P);
-    ec_point_proj_init(&R_glv);
+    mpz_t p, n, lambda, beta, k_big, x1, y1, x2, y2;
+    mpz_inits(p, n, lambda, beta, k_big, x1, y1, x2, y2, NULL);
 
-    // 3. Initialisation de la Courbe
+    mpz_t k_test; // Variable pour les petits tests (2 et 5)
+    mpz_init(k_test);
+
+    // 2. Initialisation des Points et Courbe
+
     ECCurve E;
     mpz_inits(E.a, E.b, E.p, NULL);
 
-    // =================================================================
-    // PARAMÈTRES DE LA COURBE secp256k1
-    // =================================================================
-    
-    // Corps p = 2^256 - 2^32 - 977
+    ECPointProj P, R_temp, R_glv;
+    ec_point_proj_init(&P);
+    ec_point_proj_init(&R_temp);
+    ec_point_proj_init(&R_glv);
+
+    ECPointAffine Affine_Disp; // Pour afficher (x,y)
+    ec_point_affine_init(&Affine_Disp);
+
+    // 3. PARAMÈTRES courbe SECP256K1 & GLV
+
     mpz_set_str(p, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16);
     mpz_set(E.p, p);
-    
-    // Equation y^2 = x^3 + 7
     mpz_set_ui(E.a, 0);
     mpz_set_ui(E.b, 7);
-    
-    // Ordre n
     mpz_set_str(n, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
-    // Point Générateur P
+    // Point P
     mpz_set_str(P.X, "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16);
     mpz_set_str(P.Y, "483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16);
     mpz_set_ui(P.Z, 1);
     P.infinity = 0;
 
-    // =================================================================
-    // PARAMÈTRES GLV (Pré-calculés pour secp256k1)
-    // =================================================================
-    
-    // Beta (Racine cubique de l'unité mod p)
+    // Paramètres GLV
     mpz_set_str(beta, "7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee", 16);
-    
-    // Lambda (Racine cubique de l'unité mod n)
     mpz_set_str(lambda, "5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72", 16);
-
-    // Vecteurs de la base réduite (Attention aux signes !)
     mpz_set_str(x1, "3086d221a7d46bcde86c90e49284eb15", 16);
-    
     mpz_set_str(y1, "e4437ed6010e88286f547fa90abfe4c3", 16);
-    mpz_neg(y1, y1); // y1 est négatif !
-
+    mpz_neg(y1, y1); 
     mpz_set_str(x2, "114ca50f7a8e2f3f657c1108d9d44cfd8", 16); 
-    
     mpz_set_str(y2, "3086d221a7d46bcde86c90e49284eb15", 16);
 
-    // =================================================================
-    // TEST
-    // =================================================================
+
+    // TESTS DE BASE (P, 2P, 5P)
+
+    printf("\n=== verification valeur simple ===\n");
+
+    // AFFICHER P 
+    proj_to_affine(&Affine_Disp, &P, &E);
+    printf("1. Point de départ P :\n");
+    gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
+
+    printf("\n----------------------------------------------------------\n");
+    printf("Test 1 : Calcul de 2P (doit être pareil partout)\n");
     
-    // Choix d'un scalaire k aléatoire
-    // Ici un nombre arbitraire de 256 bits
-    mpz_set_str(k, "123456789ABCDEF123456789ABCDEF123456789ABCDEF123456789ABCDEF1234", 16);
+    // 2P VIA DOUBLEMENT (ec_point_double_proj)
+    
+    ec_point_double_proj(&R_temp, &P, &E);
+    proj_to_affine(&Affine_Disp, &R_temp, &E);
+    printf("\n>> Méthode Doublement :\n");
+    gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
 
-    printf("=== Lancement du Test GLV ===\n");
-    gmp_printf("k = %Zx\n", k);
+    // 2P VIA SCALAIRE CLASSIQUE (ec_scalar_mul_proj avec k=2)
+    mpz_set_ui(k_test, 2);
+    ec_scalar_mul_proj(&R_temp, &P, k_test, &E); 
+    proj_to_affine(&Affine_Disp, &R_temp, &E);
+    printf("\n>> Méthode Somme Classique (k=2) :\n");
+    gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
 
-    // Je les laisse par défaut pour correspondre à ton prototype actuel.
-    ec_scal_mul_glv(&R_glv, &P, k, &E, x1, y1, x2, y2, beta);
+    // 2P VIA GLV 
+    ec_scal_mul_glv(&R_glv, &P, k_test, &E, x1, y1, x2, y2, beta);
+    proj_to_affine(&Affine_Disp, &R_glv, &E);
+    printf("\n>> Méthode GLV (k=2) :\n");
+    gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
+
+
+    printf("\n----------------------------------------------------------\n");
+    printf("Test B : Calcul de 5P\n");
+
+    // 5P VIA SCALAIRE CLASSIQUE 
+    mpz_set_ui(k_test, 5);
+    ec_scalar_mul_proj(&R_temp, &P, k_test, &E); 
+    proj_to_affine(&Affine_Disp, &R_temp, &E);
+    printf("\n>> Méthode Somme Classique (k=5) :\n");
+    gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
+
+    // 5P VIA GLV 
+    ec_scal_mul_glv(&R_glv, &P, k_test, &E, x1, y1, x2, y2, beta);
+    
+    if (R_glv.infinity) {
+        printf("\n>> Méthode GLV (k=5) : POINT A L'INFINI\n");
+    } else {
+        proj_to_affine(&Affine_Disp, &R_glv, &E);
+        printf("\n>> Méthode GLV (k=5) :\n");
+        gmp_printf("   X: %Zx\n   Y: %Zx\n", Affine_Disp.x, Affine_Disp.y);
+    }
+    
+    // Comparaison 
+    ECPointAffine TempAff;
+    ec_point_affine_init(&TempAff);
+    proj_to_affine(&TempAff, &R_temp, &E);
+    
+    if (mpz_cmp(TempAff.x, Affine_Disp.x) == 0 && mpz_cmp(TempAff.y, Affine_Disp.y) == 0) {
+         printf("\n SUCCÈS : GLV et Classique donnent le même résultat pour 5P.\n");
+    } else {
+         printf("\n ÉCHEC : Les résultats pour 5P sont différents !\n");
+    }
+    ec_point_affine_clear(&TempAff);
+
+    // TEST élevé (Grand k)
+
+    printf("\n\n=== TEST GLV GRAND ENTIER ===\n");
+    
+    mpz_set_str(k_big, "123456789ABCDEF123456789ABCDEF123456789ABCDEF123456789ABCDEF1234", 16);
+    gmp_printf("k = %Zx\n", k_big);
+
+    ec_scal_mul_glv(&R_glv, &P, k_big, &E, x1, y1, x2, y2, beta);
 
     printf("\nResultat Projectif (X, Y, Z) :\n");
     gmp_printf("X: %Zx\n", R_glv.X);
     gmp_printf("Y: %Zx\n", R_glv.Y);
     gmp_printf("Z: %Zx\n", R_glv.Z);
 
-    // VÉRIFICATION si le point est sur la courbe
-    
-    // Conversion en Affine pour vérifier l'équation y^2 = x^3 + 7
-    ECPointAffine Check;
-    ec_point_affine_init(&Check);
-    
+    // VÉRIFICATION COURBE
     if (R_glv.infinity) {
-        printf("\n[INFO] Le résultat est le point à l'infini (0).\n");
+        printf("\n Le résultat est le point à l'infini (0).\n");
     } else {
-        proj_to_affine(&Check, &R_glv, &E);
+        proj_to_affine(&Affine_Disp, &R_glv, &E);
 
         mpz_t lhs, rhs;
         mpz_inits(lhs, rhs, NULL);
 
-        // Calcule y^2
-        mpz_mul(lhs, Check.y, Check.y);
+        // y^2
+        mpz_mul(lhs, Affine_Disp.y, Affine_Disp.y);
         mpz_mod(lhs, lhs, p);
 
-        // Calcule x^3 + 7
-        mpz_mul(rhs, Check.x, Check.x); // x^2
+        // x^3 + 7
+        mpz_mul(rhs, Affine_Disp.x, Affine_Disp.x);
         mpz_mod(rhs, rhs, p);
-        mpz_mul(rhs, rhs, Check.x); // x^3
+        mpz_mul(rhs, rhs, Affine_Disp.x);
         mpz_mod(rhs, rhs, p);
-        mpz_add(rhs, rhs, E.b); // + 7
+        mpz_add(rhs, rhs, E.b);
         mpz_mod(rhs, rhs, p);
 
-        // Comparaison
         if (mpz_cmp(lhs, rhs) == 0) {
-            printf("\n[SUCCESS] Le point est sur la courbe.\n");
+            printf("\n[SUCCESS] Le point final est bien sur la courbe.\n");
         } else {
             printf("\n[ERROR] Le point n'est pas sur la courbe.\n");
-            gmp_printf("Attendu (x^3+7): %Zx\n", rhs);
-            gmp_printf("Obtenu (y^2)   : %Zx\n", lhs);
         }
         mpz_clears(lhs, rhs, NULL);
     }
 
     // Nettoyage final
-    mpz_clears(p, n, lambda, beta, k, x1, y1, x2, y2, E.a, E.b, E.p, NULL);
+
+    mpz_clears(p, n, lambda, beta, k_big, k_test, x1, y1, x2, y2, E.a, E.b, E.p, NULL);
     ec_point_proj_clear(&P);
     ec_point_proj_clear(&R_glv);
-    ec_point_affine_clear(&Check);
-
+    ec_point_proj_clear(&R_temp);
+    ec_point_affine_clear(&Affine_Disp);
     return 0;
 
 }
