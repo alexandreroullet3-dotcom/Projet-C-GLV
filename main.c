@@ -6,6 +6,7 @@
 #include "EC_square_and_multiply_affine.h"
 #include "EC_conversions.h"
 #include "EC_GLV.h"
+#include "EC_GLV.h"
 #include "EC_square_and_multiply_proj.h"
 
 
