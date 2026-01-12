@@ -1,7 +1,12 @@
 #ifndef EC_GLV_H
 #define EC_GLV_H
 #include "EC_struct.h"
+#include "EC_add_proj.h"
+#include "EC_endo_phi_GLV.h"
+#include "double_scalar_multiplication.h"
+#include "EC_conversions.h"
+#include "glv_decompose.h"
 
-void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve * E, const mpz_t x1, 
-                    const mpz_t y1, const mpz_t x2, const mpz_t y2, const mpz_t beta);
+void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve *E, 
+    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n);
 #endif

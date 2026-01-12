@@ -312,12 +312,12 @@ int main() {
         printf("\nLa décomposition, k = k1 + lambda * k2 est la bonne\n");
     };
     mpz_clears(k1, k2, NULL);
-    z2_clear(&v1);
-    z2_clear(&v2);
+    
     z2_clear(&v);
 
-    ec_scal_mul_glv(&R_glv, &P, k_big, &E, v1.x, v1.y, v2.x, v2.y, beta);
-
+    ec_scal_mul_glv(&R_glv, &P, k_big, &E, &v1, &v2, beta, n);
+    z2_clear(&v1);
+    z2_clear(&v2);
     ECPointProj Rexp;
     ec_point_proj_init(&Rexp);
 
@@ -366,6 +366,79 @@ int main() {
         }
         mpz_clears(lhs, rhs, NULL);
     }
+
+    /* =======================
+       RNG GMP
+       ======================= */
+
+    gmp_randstate_t rng;
+    gmp_randinit_default(rng);
+    gmp_randseed_ui(rng, 0xdeadbeef);
+
+    /* =======================
+       Buffers points
+       ======================= */
+
+    ECPointProj R_ref;
+    ec_point_proj_init(&R_glv);
+    ec_point_proj_init(&R_ref);
+
+    ECPointAffine A_glv, A_ref;
+    ec_point_affine_init(&A_glv);
+    ec_point_affine_init(&A_ref);
+
+    mpz_t k;
+    mpz_init(k);
+
+    /* =======================
+       Tests
+       ======================= */
+
+    printf("== Test GLV sur 1000 scalaires aléatoires ==\n");
+
+    for (int i = 0; i < 1000; i++) {
+
+        /* k ∈ [1, n−1] */
+        mpz_urandomm(k, rng, n);
+        if (mpz_cmp_ui(k, 0) == 0)
+            mpz_set_ui(k, 1);
+
+        ec_scalar_mul_proj(&R_ref, &P, k, &E);
+        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n);
+
+        proj_to_affine(&A_ref, &R_ref, &E);
+        proj_to_affine(&A_glv, &R_glv, &E);
+
+        if (mpz_cmp(A_ref.x, A_glv.x) != 0 ||
+            mpz_cmp(A_ref.y, A_glv.y) != 0) {
+
+            printf("\n❌ ERREUR à l'itération %d\n", i);
+            gmp_printf("k = %Zx\n", k);
+            gmp_printf("Ref : (%Zx, %Zx)\n", A_ref.x, A_ref.y);
+            gmp_printf("GLV : (%Zx, %Zx)\n", A_glv.x, A_glv.y);
+            return 1;
+        }
+
+        if (i % 100 == 0)
+            printf("  ✓ %d tests OK\n", i);
+    }
+
+    printf("\n✅ Tous les tests GLV sont PASSÉS\n");
+
+    /* =======================
+       Cleanup
+       ======================= */
+
+    mpz_clear(k);
+    ec_point_proj_clear(&P);
+    ec_point_proj_clear(&R_glv);
+    ec_point_proj_clear(&R_ref);
+    ec_point_affine_clear(&A_glv);
+    ec_point_affine_clear(&A_ref);
+    z2_clear(&v1);
+    z2_clear(&v2);
+    mpz_clears(E.a, E.b, E.p, n, beta, lambda, NULL);
+    gmp_randclear(rng);
 
     // Nettoyage final
 
