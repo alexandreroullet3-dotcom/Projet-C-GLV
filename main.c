@@ -5,7 +5,7 @@
 #include "EC_square_and_multiply_proj.h" // Les additions sont deja dans square and multiply
 #include "EC_square_and_multiply_affine.h"
 #include "EC_conversions.h"
-#include "EC_glv.h"
+#include "EC_GLV.h"
 
 
 int main() {
