@@ -5,7 +5,8 @@
 #include "EC_square_and_multiply_proj.h" // Les additions sont deja dans square and multiply
 #include "EC_square_and_multiply_affine.h"
 #include "EC_conversions.h"
-#include "EC_glv.h"
+#include "EC_GLV.h"
+#include "EC_square_and_multiply_proj.h"
 
 
 int main() {
@@ -281,15 +282,34 @@ int main() {
 
     printf("\n\n=== TEST GLV GRAND ENTIER ===\n");
     
-    mpz_set_str(k_big, "123456789ABCDEF123456789ABCDEF123456789ABCDEF123456789ABCDEF1234", 16);
+    mpz_set_str(k_big, "100000000000000000000", 16);
     gmp_printf("k = %Zx\n", k_big);
 
     ec_scal_mul_glv(&R_glv, &P, k_big, &E, x1, y1, x2, y2, beta);
+
+    ECPointProj Rexp;
+    ec_point_proj_init(&Rexp);
+
+    ec_scalar_mul_proj(&Rexp, &P, k_big, &E);
 
     printf("\nResultat Projectif (X, Y, Z) :\n");
     gmp_printf("X: %Zx\n", R_glv.X);
     gmp_printf("Y: %Zx\n", R_glv.Y);
     gmp_printf("Z: %Zx\n", R_glv.Z);
+    printf("\nResultat exponentiation rapide (X, Y, Z) :\n");
+    gmp_printf("X: %Zx\n", Rexp.X);
+    gmp_printf("Y: %Zx\n", Rexp.Y);
+    gmp_printf("Z: %Zx\n", Rexp.Z);
+
+    if (!mpz_cmp(R_glv.X, Rexp.X)){
+        printf("la coordonée X est bonne\n");
+    }
+    if (!mpz_cmp(R_glv.Y, Rexp.Y)){
+        printf("la coordonée Y est bonne\n");
+    }
+    if (!mpz_cmp(R_glv.Z, Rexp.Z)){
+        printf("la coordonée Z est bonne\n");
+    }
 
     // VÉRIFICATION COURBE
     if (R_glv.infinity) {
@@ -326,6 +346,7 @@ int main() {
     ec_point_proj_clear(&P);
     ec_point_proj_clear(&R_glv);
     ec_point_proj_clear(&R_temp);
+    ec_point_proj_clear(&Rexp);
     ec_point_affine_clear(&Affine_Disp);
     return 0;
 
