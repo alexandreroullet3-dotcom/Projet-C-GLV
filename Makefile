@@ -16,6 +16,8 @@ EC_struct.c \
 EC_endo_phi_GLV.c \
 EC_GLV.c \
 EC_conversions.c \
+short_vectors.c \
+glv_decompose.c \
 main.c
 
 OBJS := $(SRCS:.c=.o)

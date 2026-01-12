@@ -41,3 +41,22 @@ void proj_to_affine(ECPointAffine *R,
 
     mpz_clears(Zinv, Z2, Z3, NULL);
 }
+
+int ec_cmp_aff(ECPointAffine *P, ECPointAffine *Q){
+    if (!(mpz_cmp(P->x, Q->x)||mpz_cmp(P->y,Q->y)))
+        return 1;
+    else
+        return 0;
+}
+
+int ec_cmp_proj(ECPointProj *P, ECPointProj *Q, ECCurve *E){
+    ECPointAffine Paff, Qaff;
+    ec_point_affine_init(&Paff);
+    ec_point_affine_init(&Qaff);
+    proj_to_affine(&Paff, P, E);
+    proj_to_affine(&Qaff, Q, E);
+    int i = ec_cmp_aff(&Paff, &Qaff);
+    ec_point_affine_clear(&Paff);
+    ec_point_affine_clear(&Qaff);
+    return i; 
+}

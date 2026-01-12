@@ -4,6 +4,7 @@
 #include <gmp.h>
 #include <stdlib.h>
 
+
 /*
  * =========================
  * Structures de base ECC

@@ -8,7 +8,7 @@
 
 // Multiplication scalaire GLV  R = k * P
 
-void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve * E, const mpz_t x1, 
+void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve *E, const mpz_t x1, 
                     const mpz_t y1, const mpz_t x2, const mpz_t y2, const mpz_t beta){
     // on commence par decomposer k
     mpz_t k1,k2;
@@ -27,7 +27,7 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     affine_to_proj(&Q, &Q_aff);
 
 
-    ec_double_scalar_multiplication(R, P, &Q, k1, k2, 2, E);
+    ec_double_scalar_multiplication(R, P, &Q, k1, k2, 1, E);
 
     mpz_clears(k1, k2, NULL );
     ec_point_proj_clear(&Q);

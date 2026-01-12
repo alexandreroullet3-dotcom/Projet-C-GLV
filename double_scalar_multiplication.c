@@ -55,9 +55,7 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
                 ul |= (1U << b);
         }
 
-        // Ajout du pré-calcul si nécessaire
-        if (uk || ul)
-            ec_point_add_proj(&Rtmp, &Rtmp, &T[uk][ul], E);
+        ec_point_add_proj(&Rtmp, &Rtmp, &T[uk][ul], E);
     }
 
     /* =========================
