@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "EC_struct.h"
 #include "double_scalar_multiplication.h"
 #include "EC_square_and_multiply_proj.h" // Les additions sont deja dans square and multiply
@@ -23,9 +24,9 @@ int main() {
     ECCurve E;
     mpz_inits(E.a, E.b, E.p, NULL);
 
-    ECPointProj P, R_temp, R_glv;
+    ECPointProj P, R_classic, R_glv;
     ec_point_proj_init(&P);
-    ec_point_proj_init(&R_temp);
+    ec_point_proj_init(&R_classic);
     ec_point_proj_init(&R_glv);
 
 
@@ -60,7 +61,7 @@ int main() {
     gmp_printf("v2: \n x:%Zx \n y:%Zx\n",v2.x, v2.y);
     
 
-    // TEST élevé (Grand k)
+    /*
 
     printf("\n\n=== TEST GLV SUR 1000 SCALAIRES ALEATOIRES ===\n");
 
@@ -76,18 +77,18 @@ int main() {
 
     for (int i = 0; i < 1000; i++) {
 
-        /* k aléatoire dans [1, n−1] */
+        // k aléatoire dans [1, n−1]
         mpz_urandomm(k, rng, n);
         if (mpz_cmp_ui(k, 0) == 0)
             mpz_set_ui(k, 1);
 
-        /* Multiplication classique */
+        // Multiplication classique 
         ec_scalar_mul_proj(&Rexp, &P, k, &E);
 
-        /* Multiplication GLV */
+        // Multiplication GLV 
         ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n);
 
-        /* Comparaison */
+        // Comparaison
         if (!ec_cmp_proj(&Rexp, &R_glv, &E)) {
             printf("\n❌ ERREUR GLV à l’itération %d\n", i);
             gmp_printf("k = %Zx\n", k);
@@ -110,6 +111,65 @@ int main() {
     ec_point_proj_clear(&R_temp);
     ec_point_proj_clear(&Rexp);
     ec_curve_clear(&E);
+    return 0;*/
+
+    // ---------- 2. Boucle de tests ----------
+    const int N_TESTS = 1000;
+    mpz_t k;
+    mpz_init(k);
+
+    clock_t start_classic, end_classic;
+    clock_t start_glv, end_glv;
+
+    double time_classic = 0.0;
+    double time_glv = 0.0;
+
+    srand(time(NULL));
+    gmp_randstate_t state;
+    gmp_randinit_default(state); // Initialise le générateur par défaut
+
+    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
+    unsigned long seed = time(NULL);
+    gmp_randseed_ui(state, seed);
+
+    for (int i = 0; i < N_TESTS; i++) {
+        // k aléatoire modulo n
+        mpz_urandomm(k, state, n);
+
+        // -- Multiplication classique --
+        start_classic = clock();
+        ec_scalar_mul_proj(&R_classic, &P, k, &E);
+        end_classic = clock();
+        time_classic += (double)(end_classic - start_classic) / CLOCKS_PER_SEC;
+
+        // -- Multiplication GLV --
+        start_glv = clock();
+        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n);
+        end_glv = clock();
+        time_glv += (double)(end_glv - start_glv) / CLOCKS_PER_SEC;
+
+        // Vérification facultative
+        if (!ec_cmp_proj(&R_classic, &R_glv, &E)) {
+            printf("Mismatch à l'itération %d !\n", i);
+            break;
+        }
+    }
+
+    // ---------- 3. Résultat ----------
+    printf("\nTemps total pour %d multiplications scalaires :\n", N_TESTS);
+    printf(" - Méthode classique : %.6f s\n", time_classic);
+    printf(" - Méthode GLV      : %.6f s\n", time_glv);
+    printf(" - Gain GLV         : %.2f x\n", time_classic / time_glv);
+
+    // ---------- 4. Nettoyage ----------
+    mpz_clears(p, n, lambda, beta, k, state, NULL);
+    ec_point_proj_clear(&P);
+    ec_point_proj_clear(&R_classic);
+    ec_point_proj_clear(&R_glv);
+    z2_clear(&v1);
+    z2_clear(&v2);
+    ec_curve_clear(&E);
+
     return 0;
 
 }
