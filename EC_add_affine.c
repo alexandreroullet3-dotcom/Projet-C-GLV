@@ -107,3 +107,14 @@ void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P,
     // 5. Nettoyage
     mpz_clears(lambda, num, den, x3, y3, NULL);
 }
+
+void ec_point_affine_neg(ECPointAffine *R, const ECPointAffine *P){
+    if (P->infinity){
+        R->infinity = 1;
+    }
+    else{
+        R->infinity = 0;
+        mpz_set(R->x, P->x);
+        mpz_neg(R->y, P->y);
+    }
+}

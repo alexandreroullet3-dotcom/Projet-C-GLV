@@ -13,10 +13,34 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
 
     unsigned int M = 1U << w;
 
+    ECPointProj Pprime, Qprime;
+    ec_point_proj_init(&Pprime);
+    ec_point_proj_init(&Qprime);
+    mpz_t ksgn, lsgn;
+    mpz_inits(ksgn, lsgn, NULL);
+    
+    if (mpz_sgn(k)<0){
+        ec_point_proj_neg(&Pprime, P);
+        mpz_neg(ksgn, k);
+    }
+    else{
+        ec_point_proj_copy(&Pprime, P);
+        mpz_set(ksgn, k);
+    }
+
+    if (mpz_sgn(l)<0){
+        ec_point_proj_neg(&Qprime, Q);
+        mpz_neg(lsgn, l);
+    }
+    else{
+        ec_point_proj_copy(&Qprime, Q);
+        mpz_set(lsgn, l);
+    }
+
     /* =========================
        Pré-calcul des tables T[i][j] = i*P + j*Q
        ========================= */
-    ECPointProj **T = precompute_table(P, Q, w, E);
+    ECPointProj **T = precompute_table(&Pprime, &Qprime, w, E);
     if (!T) return;
 
     /* =========================
@@ -29,8 +53,8 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
     /* =========================
        Taille en bits des scalaires
        ========================= */
-    size_t nb_k = mpz_sizeinbase(k, 2);
-    size_t nb_l = mpz_sizeinbase(l, 2);
+    size_t nb_k = mpz_sizeinbase(ksgn, 2);
+    size_t nb_l = mpz_sizeinbase(lsgn, 2);
     size_t n = (nb_k > nb_l) ? nb_k : nb_l;
     size_t d = (n + w - 1) / w; // nombre de fenêtres
 
@@ -48,10 +72,10 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
         for (unsigned int b = 0; b < w; b++) {
             size_t bit = i * w + b;
 
-            if (bit < nb_k && mpz_tstbit(k, bit))
+            if (bit < nb_k && mpz_tstbit(ksgn, bit))
                 uk |= (1U << b);
 
-            if (bit < nb_l && mpz_tstbit(l, bit))
+            if (bit < nb_l && mpz_tstbit(lsgn, bit))
                 ul |= (1U << b);
         }
 
@@ -70,6 +94,9 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
        Libération mémoire
        ========================= */
     ec_point_proj_clear(&Rtmp);
+    ec_point_proj_clear(&Pprime);
+    ec_point_proj_clear(&Qprime);
+    mpz_clears(ksgn, lsgn, NULL);
 
     for (unsigned int i = 0; i < M; i++) {
         for (unsigned int j = 0; j < M; j++)

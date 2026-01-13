@@ -31,4 +31,7 @@ void ec_point_double_proj(ECPointProj *R, const ECPointProj *P, const ECCurve *E
 /* Addition de deux points projectifs : R = P + Q */
 void ec_point_add_proj(ECPointProj *R, const ECPointProj *P, const ECPointProj *Q, const ECCurve *E);
 
+/*Négation d'un point : R = -P*/
+void ec_point_proj_neg(ECPointProj *R, const ECPointProj *P);
+
 #endif /* EC_ADD_PROJ_H */

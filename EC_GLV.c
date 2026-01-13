@@ -21,7 +21,7 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     affine_to_proj(&Q, &Q_aff);
 
 
-    ec_double_scalar_multiplication(R, P, &Q, v.x, v.y, 1, E);
+    ec_double_scalar_multiplication(R, P, &Q, v.x, v.y, 2, E);
     
     z2_clear(&v);
     ec_point_proj_clear(&Q);

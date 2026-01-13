@@ -159,3 +159,15 @@ void ec_point_add_proj(ECPointProj *R, const ECPointProj *P,
     // 5. Nettoyage des variables temporaires
     mpz_clears(U1, U2, S1, S2, H, Rr, X3, Y3, Z3, H2, H3, U1H2, NULL);
 }
+
+void ec_point_proj_neg(ECPointProj *R, const ECPointProj *P){
+    if (P->infinity){
+        R->infinity = 1;
+    }
+    else{
+        R->infinity = 0;
+        mpz_set(R->X, P->X);
+        mpz_neg(R->Y, P->Y);
+        mpz_set(R->Z, P->Z);
+    }
+}

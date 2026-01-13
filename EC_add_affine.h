@@ -15,4 +15,7 @@ void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P, const ECPoint
 /* Doublement d'un point affine : R = 2P */
 void ec_point_double_affine(ECPointAffine *R, const ECPointAffine *P, const ECCurve *E);
 
+/*Négation d'un point : R = -P*/
+void ec_point_affine_neg(ECPointAffine *R, const ECPointAffine *P);
+
 #endif /* EC_ADD_AFFINE_H */
