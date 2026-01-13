@@ -15,8 +15,8 @@ int main() {
 
     // 1. Initialisation des variables
 
-    mpz_t p, n, lambda, beta, k_big, x1, y1, x2, y2;
-    mpz_inits(p, n, lambda, beta, k_big, x1, y1, x2, y2, NULL);
+    mpz_t p, n, lambda, beta;
+    mpz_inits(p, n, lambda, beta, NULL);
 
     // 2. Initialisation des Points et Courbe
 
@@ -28,8 +28,6 @@ int main() {
     ec_point_proj_init(&R_temp);
     ec_point_proj_init(&R_glv);
 
-    ECPointAffine Affine_Disp; // Pour afficher (x,y)
-    ec_point_affine_init(&Affine_Disp);
 
     // 3. PARAMÈTRES courbe SECP256K1 & GLV
 
@@ -106,12 +104,11 @@ int main() {
     
     z2_clear(&v1);
     z2_clear(&v2);
-    mpz_clears(p, n, lambda, beta,k, k_big, k1, k2, E.a, E.b, E.p, NULL);
+    mpz_clears(p, n, lambda, beta, k, k1, k2, E.a, E.b, E.p, NULL);
     ec_point_proj_clear(&P);
     ec_point_proj_clear(&R_glv);
     ec_point_proj_clear(&R_temp);
     ec_point_proj_clear(&Rexp);
-    ec_point_affine_clear(&Affine_Disp);
     ec_curve_clear(&E);
     return 0;
 
