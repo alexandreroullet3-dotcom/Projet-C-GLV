@@ -1,7 +1,6 @@
 #ifndef EC_GLV_H
 #define EC_GLV_H
-#include "EC_struct.h"
-#include "EC_add_proj.h"
+
 #include "EC_endo_phi_GLV.h"
 #include "double_scalar_multiplication.h"
 #include "EC_conversions.h"

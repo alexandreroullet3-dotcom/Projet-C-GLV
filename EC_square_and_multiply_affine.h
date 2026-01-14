@@ -1,7 +1,7 @@
 #ifndef EC_SQUARE_AND_MULTIPLY_AFFINE_H
 #define EC_SQUARE_AND_MULTIPLY_AFFINE_H
 
-#include "EC_struct.h"
+
 #include "EC_add_affine.h"
 
 /*
