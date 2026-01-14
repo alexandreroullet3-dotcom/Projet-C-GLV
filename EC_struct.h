@@ -2,6 +2,7 @@
 #define EC_STRUCT_H
 
 #include <gmp.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -73,6 +74,9 @@ void ec_point_proj_clear(ECPointProj *P);
 
 /* Copie d'un point projectif : dst <- src */
 void ec_point_proj_copy(ECPointProj *dst, const ECPointProj *src);
+
+/* comparaison deux deux point */
+int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q);
 
 /*
  * =========================

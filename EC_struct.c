@@ -26,6 +26,25 @@ void ec_point_affine_copy(ECPointAffine *R, const ECPointAffine *P) {
     R->infinity = P->infinity;
 }
 
+// Compare deux points P et Q.
+// Retourne 0 si P == Q (identiques).
+// Retourne 1 si P != Q (différents).
+int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q) {
+    if (P->infinity && Q->infinity) {
+        return 0;
+    }
+    if (P->infinity || Q->infinity) {
+        return 1;
+    }
+    if (mpz_cmp(P->x, Q->x) != 0) {
+        return 1;
+    }
+    if (mpz_cmp(P->y, Q->y) != 0) {
+        return 1; 
+    }
+    return 0;
+}
+
 /*
  * =========================
  * Fonctions pour points projectifs
