@@ -17,7 +17,7 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     ec_point_affine_init(&Q_aff);
     ec_point_proj_init(&Q);
     proj_to_affine(&P_aff, P, E);
-    ec_endo_phi_point_affine(&Q_aff, &P_aff, E, beta);
+    ec_endo_phi1_affine(&Q_aff, &P_aff, E, beta);
     affine_to_proj(&Q, &Q_aff);
 
 

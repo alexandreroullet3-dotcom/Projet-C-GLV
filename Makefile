@@ -18,6 +18,8 @@ EC_GLV.c \
 EC_conversions.c \
 short_vectors.c \
 glv_decompose.c \
+quadratic_solver.c \
+glv_curves.c\
 main.c
 
 OBJS := $(SRCS:.c=.o)

@@ -2,12 +2,39 @@
 
 #include "EC_square_and_multiply_proj.h" // Les additions sont deja dans square and multiply
 #include "EC_GLV.h"
+#include "quadratic_solver.h"
+#include "glv_curves.h"
 
 
 int main() {
     
 //////////////////  TEST de la fonction GLV //////////////////////////
+    
+    GLVCurve C;
+    init_secp256k1_curve(&C);
+    ECPointProj P, R_classic, R_glv;
+    ec_point_proj_init(&P);
+    ec_point_proj_init(&R_classic);
+    ec_point_proj_init(&R_glv);
+    mpz_t beta, lambda, n, p;
+    mpz_init_set(beta, C.beta);
+    mpz_init_set(lambda, C.lambda);
+    mpz_init_set(n, C.n);
 
+    Z2 v1, v2;
+    z2_init(&v1);
+    z2_init(&v2);
+    mpz_set(v1.x, C.v1.x);
+    mpz_set(v1.y, C.v1.y);
+    mpz_set(v2.x, C.v2.x);
+    mpz_set(v2.y, C.v2.y);
+    ECCurve E;
+    ec_curve_init(&E);
+    mpz_set(E.a, C.E.a);
+    mpz_set(E.b, C.E.b);
+    mpz_set(E.p, C.E.p);
+    mpz_init_set(p, E.p);
+    /*
     // 1. Initialisation des variables
 
     mpz_t p, n, lambda, beta;
@@ -52,60 +79,8 @@ int main() {
     z2_init(&v2);
     glv_basis(&v1, &v2, n, lambda);
     gmp_printf("v1: \n x:%Zx \n y:%Zx\n",v1.x, v1.y);
-    gmp_printf("v2: \n x:%Zx \n y:%Zx\n",v2.x, v2.y);
+    gmp_printf("v2: \n x:%Zx \n y:%Zx\n",v2.x, v2.y);*/
     
-
-    /*
-
-    printf("\n\n=== TEST GLV SUR 1000 SCALAIRES ALEATOIRES ===\n");
-
-    gmp_randstate_t rng;
-    gmp_randinit_default(rng);
-    gmp_randseed_ui(rng, 0xdeadbeef);
-
-    mpz_t k,k1,k2;
-    mpz_inits(k,k1,k2,NULL);
-
-    ECPointProj Rexp;
-    ec_point_proj_init(&Rexp);
-
-    for (int i = 0; i < 1000; i++) {
-
-        // k aléatoire dans [1, n−1]
-        mpz_urandomm(k, rng, n);
-        if (mpz_cmp_ui(k, 0) == 0)
-            mpz_set_ui(k, 1);
-
-        // Multiplication classique 
-        ec_scalar_mul_proj(&Rexp, &P, k, &E);
-
-        // Multiplication GLV 
-        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n);
-
-        // Comparaison
-        if (!ec_cmp_proj(&Rexp, &R_glv, &E)) {
-            printf("\n❌ ERREUR GLV à l’itération %d\n", i);
-            gmp_printf("k = %Zx\n", k);
-            return 1;
-        }
-
-        if (i % 100 == 0)
-            printf("  ✓ %d tests OK\n", i);
-    }
-
-    printf("\n✅ TOUS LES TESTS GLV SONT PASSÉS (1000/1000)\n");
-
-    // Nettoyage final
-    
-    z2_clear(&v1);
-    z2_clear(&v2);
-    mpz_clears(p, n, lambda, beta, k, k1, k2, E.a, E.b, E.p, NULL);
-    ec_point_proj_clear(&P);
-    ec_point_proj_clear(&R_glv);
-    ec_point_proj_clear(&R_temp);
-    ec_point_proj_clear(&Rexp);
-    ec_curve_clear(&E);
-    return 0;*/
 
     // ---------- 2. Boucle de tests ----------
     const int N_TESTS = 1000;

@@ -21,8 +21,8 @@ void glv_basis(Z2 *v1, Z2 *v2, const mpz_t n, const mpz_t lambda)
     mpz_inits(r0, r1, r2, t0, t1, t2, q, tmp, sqrt_n, NULL);
 
     mpz_set(r0, n);
-    mpz_set(r1, lambda);
     mpz_set_ui(t0, 0);
+    mpz_set(r1, lambda);
     mpz_set_ui(t1, 1);
 
     mpz_sqrt(sqrt_n, n);
@@ -31,13 +31,10 @@ void glv_basis(Z2 *v1, Z2 *v2, const mpz_t n, const mpz_t lambda)
     mpz_inits(rm, tm, rm1, tm1, rm2, tm2, NULL);
 
     while (mpz_cmp(r1, sqrt_n) > 0) {
-        mpz_fdiv_q(q, r0, r1);
-
-        mpz_mul(tmp, q, r1);
-        mpz_sub(r2, r0, tmp);
-
+        mpz_fdiv_qr(q, r2, r0, r1);
+        
         mpz_mul(tmp, q, t1);
-        mpz_sub(t2, t0, tmp);
+        mpz_sub(t2, t0, tmp); //t_2 = t_0 - q * t_1
 
         mpz_set(r0, r1);
         mpz_set(t0, t1);
