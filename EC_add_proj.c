@@ -29,13 +29,18 @@ void ec_point_double_proj(ECPointProj *R, const ECPointProj *P, const ECCurve *E
     mpz_mul_ui(S, S, 4);
     mpz_mod(S, S, E->p);
 
-    // Calcul de M = 3*X^2 + a*Z^4 mod p
+    // Calcul de M = 3*X^2 + 2*a2*X*Z^2 + a*Z^4 mod p
     mpz_mul(M, P->X, P->X);  // X^2
     mpz_mul_ui(M, M, 3);     // 3*X^2
     mpz_mul(T2, P->Z, P->Z); // Z^2
     mpz_mul(T2, T2, T2);     // Z^4
     mpz_mul(T2, T2, E->a);   // a*Z^4
-    mpz_add(M, M, T2);
+    mpz_add(M, M, T2);       // 3*X^2 + a*Z^4
+    mpz_mul_ui(T2, E->a2, 2);// 2*a2
+    mpz_mul(T2, T2, P->X);   // 2*a2*X
+    mpz_mul(T2, T2, P->Z);   // 2*a2*X*Z
+    mpz_mul(T2, T2, P->Z);   // 2*a2*X*Z^2
+    mpz_add(M, M, T2);       // 3*X^2 + 2*a2*X*Z^2 + a*Z^4
     mpz_mod(M, M, E->p);
 
     // Calcul de X3 = M^2 - 2*S mod p

@@ -130,22 +130,23 @@ void init_example2_curve(GLVCurve *curve) {
 
 void init_example3_curve(GLVCurve *curve){
     // Initialisation de la courbe
-    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, NULL);
-    
-    //probleme: nous on a que des courbes y^3 = x^3 +ax + b
-    //mais dans cet exemple on a coefficient x^2
-    //jsp comment faire, si faut changer ECCurve en ajoutant un champ a2 par exemple, mais jsp si
-    //faudrait tout changer du coup?
-    
-    //mpz_set_ui(curve->E.a, 0);
-    //mpz_set_ui(curve->E.b, 7);
-    mpz_set_str(curve->E.p, "910a26fd7f781ab40c311a6d5ca610036508d3f5e9899d9d49f5a6cccd103a6d", 16);
-    mpz_set_str(curve->n, "910a26fd7f781ab40c311a6d5ca610038b33954211fffaf5d82f7a5b9f698092", 16);
+    mpz_inits(curve->E.a, curve->E.b, curve->E.p,
+              curve->n, curve->lambda, curve->beta,
+              curve->E.a2, NULL);
+    mpz_t t;
+    mpz_init_set_ui(t, 4);
+    mpz_set_si(curve->E.a, -2);
+    mpz_set_ui(curve->E.b, -1);
+    mpz_set_str(curve->E.p, "e6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad", 16);
+    mpz_set_str(curve->n, "e6adac14aa1890c61edfaeb1f66359f59c5613554c28c9ab168f0b1f3c52fca4", 16);
+    mpz_invert(curve->E.a2, t, curve->E.p);
+    mpz_mul_ui(curve->E.a2, curve->E.a2, 3);
+    mpz_neg(curve->E.a2, curve->E.a2);
 
     // Point générateur
     ec_point_proj_init(&curve->P);
-    mpz_set_str(curve->P.X, "3F2D711A892A5B5074A60ED58BF5CBD13D9334A7F4B2E5265DB5DBE0C851B3B5", 16);
-    mpz_set_str(curve->P.Y, "503AD2618C647B7D52BDCA4656350F71EEC2271168C2C9C09885794C2ADBB035", 16);
+    mpz_set_str(curve->P.X, "2958133073b80f31070226c37e132acccafc05892f2fd67faa556b8c5dacd8d", 16);
+    mpz_set_str(curve->P.Y, "a92358ec0c20bdaf22e615ab89169b0158e4912b6e2c107b43c169cf773716bf", 16);
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
@@ -154,14 +155,16 @@ void init_example3_curve(GLVCurve *curve){
     proj_to_affine(&P_aff, &curve->P,&curve->E);
 
     // GLV paramètres
-    mpz_inits(curve->lambda, curve->beta, NULL);
     trouver_constantes_glv(curve->beta, curve->lambda, &curve->E, curve->n, &P_aff, 3);
+
+    // lambda 
+    mpz_set_str(curve->lambda, "cec272884084085b2e7c660e7e5a27cc0d98b9741cba044bf0f30f059e313209", 16);
 
     // Base du réseau GLV
     z2_init(&curve->v1);
     z2_init(&curve->v2);
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 
-
+    mpz_clear(t);
     ec_point_affine_clear(&P_aff);
 }

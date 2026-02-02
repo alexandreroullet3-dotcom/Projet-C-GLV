@@ -18,10 +18,12 @@ void ec_point_double_affine(ECPointAffine *R, const ECPointAffine *P, const ECCu
     mpz_t lambda, num, den, x3, y3;
     mpz_inits(lambda, num, den, x3, y3, NULL);
 
-    // Calcul de la pente lambda = (3*x^2 + a) / (2*y) mod p
+    // Calcul de la pente lambda = (3*x^2 + a2*x + a) / (2*y) mod p
     mpz_mul(num, P->x, P->x);   // x^2
     mpz_mul_ui(num, num, 3);    // 3*x^2
-    mpz_add(num, num, E->a);    // 3*x^2 + a
+    mpz_mul(den, E->a2, P->x);  // a2*x
+    mpz_add(num, num, den);     // 3*x^2 + a2*x
+    mpz_add(num, num, E->a);    // 3*x^2 + a2*x+ a
 
     mpz_mul_ui(den, P->y, 2);   // 2*y
     mpz_invert(den, den, E->p); // 1/(2*y) mod p
@@ -29,10 +31,11 @@ void ec_point_double_affine(ECPointAffine *R, const ECPointAffine *P, const ECCu
     mpz_mul(lambda, num, den);
     mpz_mod(lambda, lambda, E->p);
 
-    // Calcul de x3 = lambda^2 - 2*x mod p
+    // Calcul de x3 = lambda^2 - 2*x - a2 mod p
     mpz_mul(x3, lambda, lambda);
     mpz_sub(x3, x3, P->x);
     mpz_sub(x3, x3, P->x);
+    mpz_sub(x3, x3, E->a2);
     mpz_mod(x3, x3, E->p);
 
     // Calcul de y3 = lambda*(x - x3) - y mod p
@@ -87,10 +90,11 @@ void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P,
     mpz_mul(lambda, num, den);
     mpz_mod(lambda, lambda, E->p);
 
-    // Calcul de x3 = lambda^2 - x1 - x2 mod p
+    // Calcul de x3 = lambda^2 - x1 - x2 - a2 mod p
     mpz_mul(x3, lambda, lambda);
     mpz_sub(x3, x3, P->x);
     mpz_sub(x3, x3, Q->x);
+    mpz_sub(x3, x3, E->a2);
     mpz_mod(x3, x3, E->p);
 
     // Calcul de y3 = lambda*(x1 - x3) - y1 mod p

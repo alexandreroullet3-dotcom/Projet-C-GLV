@@ -1,6 +1,6 @@
 #include <time.h>
 
-#include "EC_square_and_multiply_proj.h" // Les additions sont deja dans square and multiply
+#include "EC_square_and_multiply_proj.h"
 #include "EC_GLV.h"
 #include "quadratic_solver.h"
 #include "glv_curves.h"
@@ -9,14 +9,14 @@
 int main() {
     
 //////////////////  TEST de la fonction GLV //////////////////////////
-    
     GLVCurve C;
-    init_secp256k1_curve(&C);
+    init_example3_curve(&C);
     ECPointProj P, R_classic, R_glv;
     ec_point_proj_init(&P);
     ec_point_proj_init(&R_classic);
     ec_point_proj_init(&R_glv);
     mpz_t beta, lambda, n, p;
+    
     mpz_init_set(beta, C.beta);
     mpz_init_set(lambda, C.lambda);
     mpz_init_set(n, C.n);
@@ -131,7 +131,8 @@ int main() {
     printf(" - Gain GLV         : %.2f x\n", time_classic / time_glv);
 
     // ---------- 4. Nettoyage ----------
-    mpz_clears(p, n, lambda, beta, k, state, NULL);
+    mpz_clears(p, n, lambda, beta, k, NULL);
+    gmp_randclear(state);
     ec_point_proj_clear(&P);
     ec_point_proj_clear(&R_classic);
     ec_point_proj_clear(&R_glv);

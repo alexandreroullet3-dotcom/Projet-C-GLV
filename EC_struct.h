@@ -43,6 +43,7 @@ typedef struct {
     mpz_t p; /* module premier */
     mpz_t a; /* coefficient a */
     mpz_t b; /* coefficient b */
+    mpz_t a2; /* coefficient devant x^2 (vaut 0 par défaut sauf dans l'exemple 3)*/
 } ECCurve;
 
 /*

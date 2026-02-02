@@ -85,6 +85,7 @@ void ec_curve_init(ECCurve *E) {
     mpz_init(E->p);
     mpz_init(E->a);
     mpz_init(E->b);
+    mpz_init_set_ui(E->a2, 0);
 }
 
 /* Libération de la mémoire associée à la courbe elliptique */
@@ -92,4 +93,5 @@ void ec_curve_clear(ECCurve *E) {
     mpz_clear(E->p);
     mpz_clear(E->a);
     mpz_clear(E->b);
+    mpz_clear(E->a2);
 }
