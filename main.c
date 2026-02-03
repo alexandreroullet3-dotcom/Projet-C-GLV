@@ -7,55 +7,28 @@
 
 
 int main() {
-    /*GLVCurve C;
-    init_secp256k1_curve(&C);
-    gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
-    gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
-
-    mpz_t k;
-    mpz_init_set_str(k, "4567AEFCB38A", 16);
-    ECPointProj R_classic, R_glv;
-    ECPointAffine Raff;
-    ec_point_proj_init(&R_classic);
-    ec_point_proj_init(&R_glv);
-    ec_point_affine_init(&Raff);
-    ec_scalar_mul_proj(&R_classic, &C.P, k, &C.E);
-    proj_to_affine(&Raff, &R_classic, &C.E);
-    gmp_printf("R = (%Zx, %Zx)\n", Raff.x, Raff.y);
-
-    mpz_clear(k);
-    ec_point_affine_clear(&Raff);
-    ec_point_proj_clear(&R_glv);
-    ec_point_proj_clear(&R_classic);
-    clear_curve(&C);
-
-    return 0;*/
-    
-    
-    
-
     int type;
     printf("Entrez un nombre :\n1 pour faire GLV sur secp256k1, équation de la forme y^2 = x^3 + b avec b = 7\n");
     printf("2 pour faire GLV sur une équation de la forme y^2 = x^3 + a*x avec a un entier aléatoire mod p\n");
     printf("3 pour faire GLV sur une équation de la forme y^2 = x^3 - 3/4*x^2 - 2*x - 1\n");
     scanf("%d", &type);
     
-//////////////////  TEST de la fonction GLV //////////////////////////
+    //////////////////  TEST de la fonction GLV //////////////////////////
     GLVCurve C;
     if (type == 1){
         init_secp256k1_curve(&C);
         printf("Paramètres publique :\n");
-        gmp_printf("\n Nombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+        gmp_printf("\n Nombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.P.X, C.P.Y);
     }
     else if (type == 2){
         init_example2_curve(&C);
         printf("Paramètres publique :\n");
-        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.P.X, C.P.Y);
     }
     else if (type == 3){
         init_example3_curve(&C);
         printf("Paramètres publique :\n");
-        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.P.X, C.P.Y);
     }
     else{
         printf("Veuillez entrer un nombre entre 1 et 3\n");
@@ -87,6 +60,10 @@ int main() {
     mpz_init_set(p, E.p);
     ec_point_proj_copy(&P, &C.P);
     ec_point_proj_copy(&phiP, &C.phiP);
+
+    //ec_scalar_mul_proj(&R_classic, &P, n, &E);
+    //gmp_printf("nP=(%Zx, %Zx, %Zx)\n", R_classic.X, R_classic.Y, R_classic.Z);
+    //printf("%d\n", R_classic.infinity);
 
 
     printf("Entrez un nombre :\n");
