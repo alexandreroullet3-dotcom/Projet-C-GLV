@@ -69,7 +69,7 @@ void init_example3_curve(GLVCurve *curve){
     mpz_t t;
     mpz_init_set_ui(t, 4);
     mpz_set_si(curve->E.a, -2);
-    mpz_set_ui(curve->E.b, -1);
+    mpz_set_si(curve->E.b, -1);
     mpz_set_str(curve->E.p, "e6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad", 16);
     mpz_set_str(curve->n, "e6adac14aa1890c61edfaeb1f66359f59c5613554c28c9ab168f0b1f3c52fca4", 16);
     mpz_invert(curve->E.a2, t, curve->E.p);

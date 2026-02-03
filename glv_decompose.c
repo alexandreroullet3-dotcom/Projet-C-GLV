@@ -72,9 +72,8 @@ void glv_nearest_vector(Z2 *v,
     mpz_sub(k2, k2, t); 
     
 
-    //mpz_mod(k1, k1, n);
-    //mpz_mod(k2, k2, n);
-    
+    /*mpz_mod(k1, k1, n);
+    mpz_mod(k2, k2, n);*/
     mpz_set(v->x,k1);
     mpz_set(v->y,k2);
 
