@@ -104,7 +104,7 @@ int main() {
 
         // -- Multiplication GLV --
         start_glv = clock();
-        ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2, n);
+        ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
         end_glv = clock();
         time_glv += (double)(end_glv - start_glv) / CLOCKS_PER_SEC;
 
@@ -143,7 +143,7 @@ int main() {
         return 0;
         }
 
-    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2, n);
+    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
 
     ec_scalar_mul_proj(&R_classic, &P, k, &E);
     if (ec_cmp_proj(&R_classic, &R_glv, &E) == 0){

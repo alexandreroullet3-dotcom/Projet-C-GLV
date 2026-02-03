@@ -5,4 +5,4 @@ void mpz_round_div(mpz_t r, const mpz_t num, const mpz_t den);
 void glv_nearest_vector(Z2 *v,
                         const mpz_t k,
                         const Z2 *v1,
-                        const Z2 *v2, const mpz_t n);
+                        const Z2 *v2);

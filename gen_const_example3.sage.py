@@ -7,7 +7,8 @@ _sage_const_2 = Integer(2); _sage_const_256 = Integer(256); _sage_const_255 = In
 p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
 while kronecker(-_sage_const_7 , p) == -_sage_const_1 :
     p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
-p= _sage_const_0xe6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad 
+
+p = _sage_const_0xe6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad 
 
 F = GF(p)
 E = EllipticCurve(F, [_sage_const_0 , _sage_const_0 , -_sage_const_3 /_sage_const_4 , -_sage_const_2 , -_sage_const_1 ])
@@ -28,6 +29,7 @@ P = E.random_point()
 while P.order() != n:
     P = E.random_point()
 print("P =", hex(P[_sage_const_0 ]), hex(P[_sage_const_1 ]), hex(P[_sage_const_2 ]))
+print(n*P)
 
 L_moduli = []
 L_roots = []

@@ -32,7 +32,7 @@ void mpz_round_div(mpz_t result, const mpz_t num, const mpz_t den)
 void glv_nearest_vector(Z2 *v,
                         const mpz_t k,
                         const Z2 *v1,
-                        const Z2 *v2, const mpz_t n)
+                        const Z2 *v2)
 {   mpz_t x1, x2, y1, y2, k1, k2;
     mpz_inits(x1, x2, y1, y2, k1, k2, NULL);
     mpz_set(x1, v1->x);
@@ -71,9 +71,6 @@ void glv_nearest_vector(Z2 *v,
     mpz_mul(t, b2, y2);
     mpz_sub(k2, k2, t); 
     
-
-    /*mpz_mod(k1, k1, n);
-    mpz_mod(k2, k2, n);*/
     mpz_set(v->x,k1);
     mpz_set(v->y,k2);
 
