@@ -3,7 +3,7 @@
 // Multiplication scalaire GLV  R = k * P
 
 void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve *E, 
-    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n){
+    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n, int type){
     // on commence par decomposer k
     Z2 v;
     z2_init(&v);
@@ -17,7 +17,9 @@ void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const 
     ec_point_affine_init(&Q_aff);
     ec_point_proj_init(&Q);
     proj_to_affine(&P_aff, P, E);
-    ec_endo_phi1_affine(&Q_aff, &P_aff, E, beta);
+    if (type == 1){ec_endo_phi1_affine(&Q_aff, &P_aff, E, beta);}
+    if (type == 2){ec_endo_phi2_affine(&Q_aff, &P_aff, E, beta);}
+    if (type == 3){ec_endo_phi3_affine(&Q_aff, &P_aff, E, beta);}
     affine_to_proj(&Q, &Q_aff);
 
 

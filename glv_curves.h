@@ -19,5 +19,6 @@ typedef struct {
 void init_secp256k1_curve(GLVCurve *curve);
 void init_example2_curve(GLVCurve *curve);
 void init_example3_curve(GLVCurve *curve);
+void clear_curve(GLVCurve *curve);
 
 #endif

@@ -95,11 +95,10 @@ int mpz_tonelli_shanks(mpz_t r, const mpz_t n, const mpz_t p)
 
         m = i;
 
-        mpz_clear(b);
-        mpz_clear(tmp);
+        mpz_clear(b);;
     }
 
-    mpz_clears(q, z, c, t, e, NULL);
+    mpz_clears(q, z, c, t, e, tmp, NULL);
     return 1;
 }
 
@@ -145,8 +144,8 @@ void solve_quadratic_equation(mpz_t r1, mpz_t r2, mpz_t A, mpz_t B, const mpz_t 
 // prend en entrée la courbe E, et le type (1, 2 ou 3)
 // cette focntion est a modifier si on rajoute des exemples, car si c'est aucun de c'est trois type,   
 // il faut toruver l'équation caracteristique, mais pour cela on doit la connaitre aux préalable
-void trouver_constantes_glv(mpz_t beta, mpz_t lambda, const ECCurve *E,
-                            const mpz_t n, ECPointAffine *P, int type) {
+void trouver_constantes_glv(mpz_t beta, const ECCurve *E,
+                            int type) {
     mpz_t A, B, b1, b2, l1, l2;
     mpz_inits(A, B, b1, b2, l1, l2, NULL);
 
@@ -169,74 +168,9 @@ void trouver_constantes_glv(mpz_t beta, mpz_t lambda, const ECCurve *E,
     // On choisit arbitrairement la première solution pour Beta
     mpz_set(beta, b1); 
 
-    if (mpz_cmp_ui(lambda,1)==0){
-        printf("passé par la 1\n");
-    }
-    
-    if (P->infinity){
-        printf("passé par la 2\n");
-    }
-    if (mpz_cmp_ui(n, 1) == 0){
-        printf("passé par la 3\n");
-    }
-    
-    /*
-    // Calculer Lambda (Modulo N) 
-    // Ajustement de A pour le modulo N (si type 3, A = n - 1)
-    if (type == 3){ 
-        mpz_sub_ui(A, n, 1);
-    }
-    solve_quadratic_equation(l1, l2, A, B, n);
-    
-    
-    // Trouver le bon Lambda (celui lié au beta choisi )
-    
-    ECPointAffine Q_a, Q_b;
-    ec_point_affine_init(&Q_a);
-    ec_point_affine_init(&Q_b);
-
-    // On utilise le point P pour tester, car n'importe quelle point de la courbe suffit
-    // On calcule Phi(G) avec notre beta choisi
-    if (type == 1){
-        ec_endo_phi1_affine(&Q_a, P, E, beta);
-    }else if (type == 2){
-        ec_endo_phi2_affine(&Q_a, P, E, beta);
-    }else if (type == 3){ 
-        ec_endo_phi3_affine(&Q_a, P, E, beta);
-    }
-    // Tester avec Lambda 1 : Q = l1 * G
-    // ce n'est pas grave de faire d'utiliser square and multiply car ce calcule est fait une seul fois 
-    // pour trouver lambda, une fois lambda connu (lambda fait environ la taille de k)
-    //on poura utiliser GLV autant de fois que l'on veut sur une même courbe
-    ec_scalar_mul_affine(&Q_b, P, l1, E);
-
-    // Comparaison
-    if (ec_cmp_affine(&Q_a, &Q_b) == 0) {
-        mpz_set(lambda, l1); // C'est l1
-    } else {
-        mpz_set(lambda, l2); // C'est l2
-    }
 
     // Nettoyage
     mpz_clears(A, B, b1, b2, l1, l2, NULL);
-    ec_point_affine_clear(&Q_a);
-    ec_point_affine_clear(&Q_b);
-    }*/
-}
+} 
 
-void find_omega(mpz_t omega, const mpz_t p){
-    mpz_t a;
-    mpz_init(a);
-    mpz_set_si(a, -7);
-    if (mpz_legendre(a, p) != 1){
-        printf("Erreur le nombre premier p ne convient pas, -7 n'est pas résidu quadratique mod p\n");
-        return ;
-    }
-    mpz_tonelli_shanks(a, a, p);
-    mpz_add_ui(omega, a, 1);
-    mpz_set_ui(a, 2);
-    mpz_invert(a, a, p);
-    mpz_mul(omega, omega, a);
-    mpz_mod(omega, omega, p);
-    mpz_clear(a);
-}
+

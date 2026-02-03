@@ -7,5 +7,5 @@
 #include "glv_decompose.h"
 
 void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve *E, 
-    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n);
+    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n, int type);
 #endif

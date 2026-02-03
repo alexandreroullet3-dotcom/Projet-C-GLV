@@ -7,10 +7,58 @@
 
 
 int main() {
+    /*GLVCurve C;
+    init_secp256k1_curve(&C);
+    gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+    gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
+
+    mpz_t k;
+    mpz_init_set_str(k, "4567AEFCB38A", 16);
+    ECPointProj R_classic, R_glv;
+    ECPointAffine Raff;
+    ec_point_proj_init(&R_classic);
+    ec_point_proj_init(&R_glv);
+    ec_point_affine_init(&Raff);
+    ec_scalar_mul_proj(&R_classic, &C.P, k, &C.E);
+    proj_to_affine(&Raff, &R_classic, &C.E);
+    gmp_printf("R = (%Zx, %Zx)\n", Raff.x, Raff.y);
+
+    mpz_clear(k);
+    ec_point_affine_clear(&Raff);
+    ec_point_proj_clear(&R_glv);
+    ec_point_proj_clear(&R_classic);
+    clear_curve(&C);
+
+    return 0;*/
+    
+    
+    
+
+    int type;
+    printf("Entrez un nombre :\n1 pour faire GLV sur secp256k1, équation de la forme y^2 = x^3 + b\n");
+    printf("2 pour faire GLV sur une équation de la forme y^2 = x^3 + a*x\n");
+    printf("3 pour faire GLV sur une équation de la forme y^2 = x^3 - 3/4*x^2 - 2*x - 1\n");
+    scanf("%d", &type);
     
 //////////////////  TEST de la fonction GLV //////////////////////////
     GLVCurve C;
-    init_example3_curve(&C);
+    if (type == 1){
+        init_secp256k1_curve(&C);
+        gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+        gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
+    }
+    else if (type == 2){
+        init_example2_curve(&C);
+    }
+    else if (type == 3){
+        init_example3_curve(&C);
+        gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
+        gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
+    }
+    else{
+        printf("Veuillez entrer un nombre entre 1 et 3\n");
+        return 0;
+    }
     ECPointProj P, R_classic, R_glv;
     ec_point_proj_init(&P);
     ec_point_proj_init(&R_classic);
@@ -34,54 +82,15 @@ int main() {
     mpz_set(E.b, C.E.b);
     mpz_set(E.p, C.E.p);
     mpz_init_set(p, E.p);
-    /*
-    // 1. Initialisation des variables
+    ec_point_proj_copy(&P, &C.P);
 
-    mpz_t p, n, lambda, beta;
-    mpz_inits(p, n, lambda, beta, NULL);
+    printf("Entrez un nombre :\n");
+    printf("1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n");
+    printf("2 pour utiliser GLV sur un exemple spécifique\n");
+    int option;
+    scanf("%d", &option);
 
-    // 2. Initialisation des Points et Courbe
-
-    ECCurve E;
-    mpz_inits(E.a, E.b, E.p, NULL);
-
-    ECPointProj P, R_classic, R_glv;
-    ec_point_proj_init(&P);
-    ec_point_proj_init(&R_classic);
-    ec_point_proj_init(&R_glv);
-
-
-    // 3. PARAMÈTRES courbe SECP256K1 & GLV
-
-    mpz_set_str(p, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16);
-    mpz_set(E.p, p);
-    mpz_set_ui(E.a, 0);
-    mpz_set_ui(E.b, 7);
-    mpz_set_str(n, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
-
-    // Point P
-    mpz_set_str(P.X, "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16);
-    mpz_set_str(P.Y, "483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16);
-    mpz_set_ui(P.Z, 1);
-    P.infinity = 0;
-
-    // Paramètres GLV
-    mpz_set_str(beta, "7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee", 16);
-    mpz_set_str(lambda, "5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72", 16);
-    //mpz_set_str(x1, "3086d221a7d46bcde86c90e49284eb15", 16);
-    //mpz_set_str(y1, "e4437ed6010e88286f547fa90abfe4c3", 16);
-    //mpz_neg(y1, y1); 
-    //mpz_set_str(x2, "114ca50f7a8e2f3f657c1108d9d44cfd8", 16); 
-    //mpz_set_str(y2, "3086d221a7d46bcde86c90e49284eb15", 16);
-
-    Z2 v1, v2;
-    z2_init(&v1);
-    z2_init(&v2);
-    glv_basis(&v1, &v2, n, lambda);
-    gmp_printf("v1: \n x:%Zx \n y:%Zx\n",v1.x, v1.y);
-    gmp_printf("v2: \n x:%Zx \n y:%Zx\n",v2.x, v2.y);*/
-    
-
+    if (option == 1){
     // ---------- 2. Boucle de tests ----------
     const int N_TESTS = 1000;
     mpz_t k;
@@ -113,26 +122,62 @@ int main() {
 
         // -- Multiplication GLV --
         start_glv = clock();
-        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n);
+        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n, type);
         end_glv = clock();
         time_glv += (double)(end_glv - start_glv) / CLOCKS_PER_SEC;
 
         // Vérification facultative
-        if (!ec_cmp_proj(&R_classic, &R_glv, &E)) {
+        if (ec_cmp_proj(&R_classic, &R_glv, &E) == 1) {
             printf("Mismatch à l'itération %d !\n", i);
             break;
         }
     }
 
     // ---------- 3. Résultat ----------
-    printf("\nTemps total pour %d multiplications scalaires :\n", N_TESTS);
+    printf("\nTemps total pour %d multiplications scalaires sur des entiers aléatoires:\n", N_TESTS);
     printf(" - Méthode classique : %.6f s\n", time_classic);
-    printf(" - Méthode GLV      : %.6f s\n", time_glv);
-    printf(" - Gain GLV         : %.2f x\n", time_classic / time_glv);
+    printf(" - Méthode GLV       : %.6f s\n", time_glv);
+    printf(" - Gain GLV          : %.2f x\n", time_classic / time_glv);
+    gmp_randclear(state);
+    mpz_clear(k);
+    };
+
+
+    if (option == 2){
+    mpz_t k;
+    mpz_init(k);
+    ECPointAffine Raff;
+    ec_point_affine_init(&Raff);
+    
+    printf("Entrez l'entier k\n");
+    char hex_str[256]; // plus grand pour éviter overflow
+    if (scanf("%255s", hex_str) != 1) {
+        printf("Erreur de lecture de k\n");
+        return 0;
+    }
+
+    if (mpz_set_str(k, hex_str, 16) != 0) {
+        printf("Erreur : k n'est pas un hex valide !\n");
+        return 0;
+        }
+
+    ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n, type);
+
+    ec_scalar_mul_proj(&R_classic, &P, k, &E);
+    if (ec_cmp_proj(&R_classic, &R_glv, &E) == 0){
+        printf("Le calcul avec GLV coïncide avec l'exponentiation rapide et le résultat est \n");
+        proj_to_affine(&Raff, &R_glv, &E);
+        gmp_printf("k*P = (%Zx, %Zx)\n", Raff.x, Raff.y);
+    }
+    else{
+        printf("Les résultats GLV et exponentiation rapide ne coïncident pas\n");
+        proj_to_affine(&Raff, &R_glv, &E);
+        gmp_printf("k*P = (%Zx, %Zx)\n", Raff.x, Raff.y);
+    }
+    }
 
     // ---------- 4. Nettoyage ----------
-    mpz_clears(p, n, lambda, beta, k, NULL);
-    gmp_randclear(state);
+    mpz_clears(p, n, lambda, beta, NULL);
     ec_point_proj_clear(&P);
     ec_point_proj_clear(&R_classic);
     ec_point_proj_clear(&R_glv);
@@ -141,5 +186,4 @@ int main() {
     ec_curve_clear(&E);
 
     return 0;
-
 }

@@ -26,24 +26,6 @@ void ec_point_affine_copy(ECPointAffine *R, const ECPointAffine *P) {
     R->infinity = P->infinity;
 }
 
-// Compare deux points P et Q.
-// Retourne 0 si P == Q (identiques).
-// Retourne 1 si P != Q (différents).
-int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q) {
-    if (P->infinity && Q->infinity) {
-        return 0;
-    }
-    if (P->infinity || Q->infinity) {
-        return 1;
-    }
-    if (mpz_cmp(P->x, Q->x) != 0) {
-        return 1;
-    }
-    if (mpz_cmp(P->y, Q->y) != 0) {
-        return 1; 
-    }
-    return 0;
-}
 
 /*
  * =========================
@@ -72,6 +54,112 @@ void ec_point_proj_copy(ECPointProj *R, const ECPointProj *P) {
     mpz_set(R->Y, P->Y);
     mpz_set(R->Z, P->Z);
     R->infinity = P->infinity;
+}
+
+
+void affine_to_proj(ECPointProj *R, const ECPointAffine *P)
+{
+    if (P->infinity) {
+        R->infinity = 1;
+        return;
+    }
+    mpz_set(R->X, P->x);
+    mpz_set(R->Y, P->y);
+    mpz_set_ui(R->Z, 1);
+    R->infinity = 0;
+}
+
+/*Conversions de points*/
+
+void proj_to_affine(ECPointAffine *R,
+                    const ECPointProj *P,
+                    const ECCurve *E)
+{
+    if (P->infinity) {
+        R->infinity = 1;
+        return;
+    }
+
+    mpz_t Zinv, Z2, Z3;
+    mpz_inits(Zinv, Z2, Z3, NULL);
+
+    mpz_invert(Zinv, P->Z, E->p);
+    mpz_mul(Z2, Zinv, Zinv);
+    mpz_mod(Z2, Z2, E->p);
+
+    mpz_mul(Z3, Z2, Zinv);
+    mpz_mod(Z3, Z3, E->p);
+
+    mpz_mul(R->x, P->X, Z2);
+    mpz_mod(R->x, R->x, E->p);
+
+    mpz_mul(R->y, P->Y, Z3);
+    mpz_mod(R->y, R->y, E->p);
+
+    R->infinity = 0;
+
+    mpz_clears(Zinv, Z2, Z3, NULL);
+}
+
+
+// Compare deux points P et Q.
+// Retourne 0 si P == Q (identiques).
+// Retourne 1 si P != Q (différents).
+int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q) {
+    if (P->infinity && Q->infinity) {
+        return 0;
+    }
+    if (P->infinity || Q->infinity) {
+        return 1;
+    }
+    if (mpz_cmp(P->x, Q->x) != 0) {
+        return 1;
+    }
+    if (mpz_cmp(P->y, Q->y) != 0) {
+        return 1; 
+    }
+    return 0;
+}
+
+int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E){
+    if (P->infinity && Q->infinity) {
+        return 0;
+    }
+    if (P->infinity || Q->infinity) {
+        return 1;
+    }
+
+    mpz_t xp, yp, xq, yq;
+    mpz_inits(xp, yp, xq, yq, NULL);
+    mpz_mul(xp, P->X, Q->Z);
+    mpz_mul(xp, xp, Q->Z);
+    mpz_mod(xp, xp, E->p);
+
+    mpz_mul(yp, P->Y, Q->Z);
+    mpz_mul(yp, yp, Q->Z);
+    mpz_mul(yp, yp, Q->Z);
+    mpz_mod(yp, yp, E->p);
+
+
+    mpz_mul(xq, Q->X, P->Z);
+    mpz_mul(xq, xq, P->Z);
+    mpz_mod(xq, xq, E->p);
+    
+    mpz_mul(yq, Q->Y, P->Z);
+    mpz_mul(yq, yq, P->Z);
+    mpz_mul(yq, yq, P->Z);
+    mpz_mod(yq, yq, E->p);
+    
+    if  (mpz_cmp(xp, xq) != 0){
+        mpz_clears(xp, yp, xq, yq, NULL);
+        return 1;
+    }
+    if  (mpz_cmp(yp, yq) != 0){
+        mpz_clears(xp, yp, xq, yq, NULL);
+        return 1;
+    }
+    mpz_clears(xp, yp, xq, yq, NULL);
+    return 0;
 }
 
 /*

@@ -15,27 +15,21 @@ void init_secp256k1_curve(GLVCurve *curve) {
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
-    ECPointAffine P_aff;
-    ec_point_affine_init(&P_aff);
-    proj_to_affine(&P_aff, &curve->P,&curve->E);
-
     // GLV paramètres
     mpz_inits(curve->lambda, curve->beta, NULL);
-    trouver_constantes_glv(curve->beta, curve->lambda, &curve->E, curve->n, &P_aff, 1);
+    trouver_constantes_glv(curve->beta, &curve->E, 1);
     mpz_set_str(curve->lambda, "5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72", 16);
 
     // Base du réseau GLV
     z2_init(&curve->v1);
     z2_init(&curve->v2);
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
-
-    ec_point_affine_clear(&P_aff);
 }
 
 /*Les valeurs ont été calculées avec le fichier gen_const_example2.sage*/
 void init_example2_curve(GLVCurve *curve) {
     // Initialisation de la courbe
-    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, NULL);
+    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, NULL);
     mpz_set_str(curve->E.a, "2e818c97303c2c8e6ee49e2b6cacc754eff27e8346e4a23da9b7b882685b7c72", 16);
     mpz_set_ui(curve->E.b, 0);
     mpz_set_str(curve->E.p, "b4fc23d83418e4d099141c1a435cbb663817e03477f8f84f3afd51e63e89ef31", 16);
@@ -48,82 +42,17 @@ void init_example2_curve(GLVCurve *curve) {
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
-    ECPointAffine P_aff;
-    ec_point_affine_init(&P_aff);
-    proj_to_affine(&P_aff, &curve->P,&curve->E);
+    //trouver beta (une racine carré de -1 mod p)
+    trouver_constantes_glv(curve->beta, &curve->E, 2);
 
-    //On calcule ici lambda à la main avec le crt en utilisant la factorisation de n donné par sage
-    // n = 2 * 184239961 * 3248770255115366281 * 868559398343199438216463774116001181
-    //La fonction mpz_tonelli_shanks ne marche que pour n premier
-    mpz_inits(curve->lambda, curve->beta, NULL);
-
-    mpz_t t, a_1, a_2, a_3, a_4, b, c, d, e;
-    mpz_inits(t, a_1, a_2, a_3, a_4, b, c, d, e, NULL);
-
-    mpz_set_ui(b, 2);
-    mpz_set_ui(c, 184239961);
-    mpz_set_ui(d, 3248770255115366281);
-    mpz_set_str(e, "868559398343199438216463774116001181", 10);
-
-    mpz_set_ui(a_1, 1);
-
-    mpz_sub_ui(t, c, 1);    
-    mpz_tonelli_shanks(a_2, t, c);
-
-    mpz_sub_ui(t, d, 1);
-    mpz_tonelli_shanks(a_3, t, d);
-
-    mpz_sub_ui(t, e, 1);
-    mpz_tonelli_shanks(a_4, t, e);
-
-    mpz_t n_1, n_2, n_3, n_4, e_1, e_2, e_3, e_4;
-    mpz_inits(n_1, n_2, n_3, n_4, e_1, e_2, e_3, e_4, NULL);
-
-    mpz_divexact(n_1, curve->n, b);
-    mpz_divexact(n_2, curve->n, c);
-    mpz_divexact(n_3, curve->n, d);
-    mpz_divexact(n_4, curve->n, e);
-
-    mpz_invert(e_1, b, n_1);
-    mpz_invert(e_2, c, n_2);
-    mpz_invert(e_3, d, n_3);
-    mpz_invert(e_4, e, n_4);
-
-    mpz_mul(a_1, a_1, n_1);
-    mpz_mul(a_1, a_1, e_1);
-
-    mpz_mul(a_2, a_2, n_2);
-    mpz_mul(a_2, a_2, e_2);
-
-    mpz_mul(a_3, a_3, n_3);
-    mpz_mul(a_3, a_3, e_3);
-
-    mpz_mul(a_4, a_4, n_4);
-    mpz_mul(a_4, a_4, e_4);
-
-    mpz_add(t, a_1, a_2);
-    mpz_add(t, t, a_3);
-    mpz_add(t, t, a_4);
-
-    mpz_mod(curve->lambda, t, curve->n);
-
-
-    //Constantes GLV
-    //jai pas modifié la signature de cette fonction mais elle ne modifie pas lambda
-
-    trouver_constantes_glv(curve->beta, curve->lambda, &curve->E, curve->n, &P_aff, 2);
-    
-    gmp_printf("lambda = %Zx\n", curve->lambda);
-    gmp_printf("beta = %Zx\n", curve->beta);
+    //trouver lambda (une racine carré de -1 mod n), calculé avec gen_const_example2.sage
+    mpz_set_str(curve->lambda, "81e16b4d3131f1322cf0ab2ba439286b3962df578bf08b5dc04a37e1c8e31333", 16);
 
     // Base du réseau GLV
     z2_init(&curve->v1);
     z2_init(&curve->v2);
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
-
-    mpz_clears(t, a_1, a_2, a_3, a_4, n_1, n_2, n_3, n_4, e_1, e_2, e_3, e_4, b, c, d, e, NULL);
 }
-
 
 
 /*Les valeurs ont été calculées avec le fichier gen_const_example3.sage*/
@@ -150,12 +79,8 @@ void init_example3_curve(GLVCurve *curve){
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
-    ECPointAffine P_aff;
-    ec_point_affine_init(&P_aff);
-    proj_to_affine(&P_aff, &curve->P,&curve->E);
-
     // GLV paramètres
-    trouver_constantes_glv(curve->beta, curve->lambda, &curve->E, curve->n, &P_aff, 3);
+    trouver_constantes_glv(curve->beta, &curve->E, 3);
 
     // lambda 
     mpz_set_str(curve->lambda, "cec272884084085b2e7c660e7e5a27cc0d98b9741cba044bf0f30f059e313209", 16);
@@ -166,5 +91,12 @@ void init_example3_curve(GLVCurve *curve){
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 
     mpz_clear(t);
-    ec_point_affine_clear(&P_aff);
+}
+
+void clear_curve(GLVCurve *curve){
+    mpz_clears(curve->beta, curve->lambda, curve->n, NULL);
+    z2_clear(&curve->v1);
+    z2_clear(&curve->v2);
+    ec_curve_clear(&curve->E);
+    ec_point_proj_clear(&curve->P);
 }

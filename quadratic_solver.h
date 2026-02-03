@@ -16,8 +16,8 @@ void solve_quadratic_equation(mpz_t r1, mpz_t r2, mpz_t A, mpz_t B, const mpz_t 
 // prend en entrée la courbe E, et le type (1, 2 ou 3)
 // cette focntion est a modifier si on rajoute des exemples, car si c'est aucun de c'est trois type,   
 // il faut toruver l'équation caracteristique, mais pour cela on doit la connaitre aux préalable
-void trouver_constantes_glv(mpz_t beta, mpz_t lambda, const ECCurve *E,
-                             const mpz_t n, ECPointAffine *P, int type);
+void trouver_constantes_glv(mpz_t beta, const ECCurve *E,
+                            int type);
 
 
 //Fonction utilisée dans le cas 3 pour calculer omega = (1+sqrt(-7))/2

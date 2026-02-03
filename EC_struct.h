@@ -76,8 +76,7 @@ void ec_point_proj_clear(ECPointProj *P);
 /* Copie d'un point projectif : dst <- src */
 void ec_point_proj_copy(ECPointProj *dst, const ECPointProj *src);
 
-/* comparaison deux deux point */
-int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q);
+
 
 /*
  * =========================
@@ -90,6 +89,13 @@ void affine_to_proj(ECPointProj *R, const ECPointAffine *P);
 
 /* Conversion projectif -> affine (nécessite une inversion modulo p) */
 void proj_to_affine(ECPointAffine *R, const ECPointProj *P, const ECCurve *E);
+
+
+/* comparaison deux deux point */
+int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q);
+
+/* comparaison deux deux point */
+int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E);
 
 /*
  * =========================
