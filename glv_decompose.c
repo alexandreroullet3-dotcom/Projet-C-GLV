@@ -42,7 +42,7 @@ void glv_nearest_vector(Z2 *v,
     mpz_t det, b1, b2, num, t;
     mpz_inits(det, b1, b2, num, t, NULL);
 
-    // résoudre le système linéaire k= b1*x1 + b2*x2 et 0= b1*y1 + b2*y2
+    // résoudre le système linéaire k = b1*x1 + b2*x2 et 0 = b1*y1 + b2*y2
     // On veut approcher le vecteur (k, 0) par b1*v1 + b2*v2
     // det = x1*y2 - x2*y1
     mpz_mul(det, x1, y2);
@@ -71,10 +71,13 @@ void glv_nearest_vector(Z2 *v,
     mpz_mul(t, b2, y2);
     mpz_sub(k2, k2, t); 
     
+
+    //mpz_mod(k1, k1, n);
+    //mpz_mod(k2, k2, n);
+    
     mpz_set(v->x,k1);
     mpz_set(v->y,k2);
-    mpz_mod(k1, k1, n);
-    mpz_mod(k2, k2, n);
+
 
     // Nettoyage
     mpz_clears(det, b1, b2, k1, k2, x1, x2, y1, y2, num, t, NULL);
