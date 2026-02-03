@@ -10,6 +10,7 @@ void init_secp256k1_curve(GLVCurve *curve) {
 
     // Point générateur
     ec_point_proj_init(&curve->P);
+    ec_point_proj_init(&curve->phiP);
     mpz_set_str(curve->P.X, "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16);
     mpz_set_str(curve->P.Y, "483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16);
     mpz_set_ui(curve->P.Z, 1);
@@ -19,6 +20,7 @@ void init_secp256k1_curve(GLVCurve *curve) {
     mpz_inits(curve->lambda, curve->beta, NULL);
     trouver_constantes_glv(curve->beta, &curve->E, 1);
     mpz_set_str(curve->lambda, "5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72", 16);
+    ec_scalar_mul_proj(&curve->phiP, &curve->P, curve->lambda, &curve->E);
 
     // Base du réseau GLV
     z2_init(&curve->v1);
@@ -37,8 +39,9 @@ void init_example2_curve(GLVCurve *curve) {
 
     // Point générateur
     ec_point_proj_init(&curve->P);
-    mpz_set_str(curve->P.X, "1e57bf13b5d9247da3cfdc0d46fe2b3924fd3698b201ab650ba511c9fdecf107", 16);
-    mpz_set_str(curve->P.Y, "7aac691affa92ae823ad1af5cf523f0dce0c5f471527c1b4901b042fb3057409", 16);
+    ec_point_proj_init(&curve->phiP);
+    mpz_set_str(curve->P.X, "a3cf5403796bcb5f78979ac1eac261d7d7c5785a712d01a52519542c2e6f0dc6", 16);
+    mpz_set_str(curve->P.Y, "5a4073851f2f574df70c8c84906546b6ca76421fcc7db0901ffc77fa9a2ed540", 16);
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
@@ -47,6 +50,7 @@ void init_example2_curve(GLVCurve *curve) {
 
     //trouver lambda (une racine carré de -1 mod n), calculé avec gen_const_example2.sage
     mpz_set_str(curve->lambda, "81e16b4d3131f1322cf0ab2ba439286b3962df578bf08b5dc04a37e1c8e31333", 16);
+    ec_scalar_mul_proj(&curve->phiP, &curve->P, curve->lambda, &curve->E);
 
     // Base du réseau GLV
     z2_init(&curve->v1);
@@ -74,6 +78,7 @@ void init_example3_curve(GLVCurve *curve){
 
     // Point générateur
     ec_point_proj_init(&curve->P);
+    ec_point_proj_init(&curve->phiP);
     mpz_set_str(curve->P.X, "2958133073b80f31070226c37e132acccafc05892f2fd67faa556b8c5dacd8d", 16);
     mpz_set_str(curve->P.Y, "a92358ec0c20bdaf22e615ab89169b0158e4912b6e2c107b43c169cf773716bf", 16);
     mpz_set_ui(curve->P.Z, 1);
@@ -83,8 +88,9 @@ void init_example3_curve(GLVCurve *curve){
     trouver_constantes_glv(curve->beta, &curve->E, 3);
 
     // lambda 
-    mpz_set_str(curve->lambda, "cec272884084085b2e7c660e7e5a27cc0d98b9741cba044bf0f30f059e313209", 16);
-
+    mpz_set_str(curve->lambda, "cec272884084085b2e7c660e7e5a27cc0d98b9741cba044bf0f30f059e31320a", 16);
+    ec_scalar_mul_proj(&curve->phiP, &curve->P, curve->lambda, &curve->E);
+    
     // Base du réseau GLV
     z2_init(&curve->v1);
     z2_init(&curve->v2);
@@ -99,4 +105,5 @@ void clear_curve(GLVCurve *curve){
     z2_clear(&curve->v2);
     ec_curve_clear(&curve->E);
     ec_point_proj_clear(&curve->P);
+    ec_point_proj_clear(&curve->phiP);
 }

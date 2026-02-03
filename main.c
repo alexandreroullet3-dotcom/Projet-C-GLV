@@ -35,8 +35,8 @@ int main() {
     
 
     int type;
-    printf("Entrez un nombre :\n1 pour faire GLV sur secp256k1, équation de la forme y^2 = x^3 + b\n");
-    printf("2 pour faire GLV sur une équation de la forme y^2 = x^3 + a*x\n");
+    printf("Entrez un nombre :\n1 pour faire GLV sur secp256k1, équation de la forme y^2 = x^3 + b avec b = 7\n");
+    printf("2 pour faire GLV sur une équation de la forme y^2 = x^3 + a*x avec a un entier aléatoire mod p\n");
     printf("3 pour faire GLV sur une équation de la forme y^2 = x^3 - 3/4*x^2 - 2*x - 1\n");
     scanf("%d", &type);
     
@@ -44,23 +44,26 @@ int main() {
     GLVCurve C;
     if (type == 1){
         init_secp256k1_curve(&C);
-        gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
-        gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
+        printf("Paramètres publique :\n");
+        gmp_printf("\n Nombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
     }
     else if (type == 2){
         init_example2_curve(&C);
+        printf("Paramètres publique :\n");
+        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
     }
     else if (type == 3){
         init_example3_curve(&C);
-        gmp_printf("p %Zx\nn %Zx\nbeta %Zx\nP.X %Zx\nP.Y %Zx\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
-        gmp_printf("v1 %Zx, %Zx \nv2 %Zx, %Zx \n", C.v1.x, C.v1.y, C.v2.x, C.v2.y);
+        printf("Paramètres publique :\n");
+        gmp_printf("\nNombre premier utilisé:\np = %Zx\nOrdre de la courbe :\nn = %Zx\nPoint générateur :\nP = (%Zx,%Zx)\n\n",C.E.p, C.n, C.beta, C.P.X, C.P.Y);
     }
     else{
         printf("Veuillez entrer un nombre entre 1 et 3\n");
         return 0;
     }
-    ECPointProj P, R_classic, R_glv;
+    ECPointProj P, phiP, R_classic, R_glv;
     ec_point_proj_init(&P);
+    ec_point_proj_init(&phiP);
     ec_point_proj_init(&R_classic);
     ec_point_proj_init(&R_glv);
     mpz_t beta, lambda, n, p;
@@ -83,6 +86,8 @@ int main() {
     mpz_set(E.p, C.E.p);
     mpz_init_set(p, E.p);
     ec_point_proj_copy(&P, &C.P);
+    ec_point_proj_copy(&phiP, &C.phiP);
+
 
     printf("Entrez un nombre :\n");
     printf("1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n");
@@ -122,7 +127,7 @@ int main() {
 
         // -- Multiplication GLV --
         start_glv = clock();
-        ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n, type);
+        ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2, n);
         end_glv = clock();
         time_glv += (double)(end_glv - start_glv) / CLOCKS_PER_SEC;
 
@@ -161,7 +166,7 @@ int main() {
         return 0;
         }
 
-    ec_scal_mul_glv(&R_glv, &P, k, &E, &v1, &v2, beta, n, type);
+    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2, n);
 
     ec_scalar_mul_proj(&R_classic, &P, k, &E);
     if (ec_cmp_proj(&R_classic, &R_glv, &E) == 0){
@@ -179,6 +184,7 @@ int main() {
     // ---------- 4. Nettoyage ----------
     mpz_clears(p, n, lambda, beta, NULL);
     ec_point_proj_clear(&P);
+    ec_point_proj_clear(&phiP);
     ec_point_proj_clear(&R_classic);
     ec_point_proj_clear(&R_glv);
     z2_clear(&v1);

@@ -7,6 +7,7 @@ _sage_const_2 = Integer(2); _sage_const_256 = Integer(256); _sage_const_255 = In
 p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
 while mod(p, _sage_const_4 ) != _sage_const_1 :
     p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
+
 p = _sage_const_0xb4fc23d83418e4d099141c1a435cbb663817e03477f8f84f3afd51e63e89ef31 
 F = GF(p)
 

@@ -1,11 +1,10 @@
 p = random_prime(2^256, lbound=2^255)
 while mod(p, 4) != 1:
     p = random_prime(2^256, lbound=2^255)
-p = 0xb4fc23d83418e4d099141c1a435cbb663817e03477f8f84f3afd51e63e89ef31
+
 F = GF(p)
 
 a = int(F.random_element())
-a = 0x2e818c97303c2c8e6ee49e2b6cacc754eff27e8346e4a23da9b7b882685b7c72
 E = EllipticCurve(F, [a, 0])
 
 n = E.order()

@@ -3,11 +3,13 @@
 
 #include "quadratic_solver.h"
 #include "glv_decompose.h"
+#include "EC_square_and_multiply_proj.h"
 
 // Structure pour une courbe GLV
 typedef struct {
     ECCurve E;
     ECPointProj P;
+    ECPointProj phiP;
     mpz_t n;
     mpz_t lambda;
     mpz_t beta;

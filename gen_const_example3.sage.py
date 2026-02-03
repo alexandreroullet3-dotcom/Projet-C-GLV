@@ -7,8 +7,7 @@ _sage_const_2 = Integer(2); _sage_const_256 = Integer(256); _sage_const_255 = In
 p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
 while kronecker(-_sage_const_7 , p) == -_sage_const_1 :
     p = random_prime(_sage_const_2 **_sage_const_256 , lbound=_sage_const_2 **_sage_const_255 )
-
-p = _sage_const_0xe6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad 
+p= _sage_const_0xe6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad 
 
 F = GF(p)
 E = EllipticCurve(F, [_sage_const_0 , _sage_const_0 , -_sage_const_3 /_sage_const_4 , -_sage_const_2 , -_sage_const_1 ])
@@ -38,8 +37,8 @@ for prime, e in fac:
     R = Integers(modulus)
 
     if prime == _sage_const_2 :
-        # pour 2^e, on teste toutes les valeurs possibles pour x^2+x+2 mod 2^e
-        roots = [x for x in range(modulus) if (x**_sage_const_2  + x + _sage_const_2 ) % modulus == _sage_const_0 ]
+        # pour 2^e, on teste toutes les valeurs possibles pour x^2-x+2 mod 2^e
+        roots = [x for x in range(modulus) if (x**_sage_const_2  - x + _sage_const_2 ) % modulus == _sage_const_0 ]
         L_moduli.append(modulus)
         L_roots.append(roots[_sage_const_0 ])  # on prend une solution parmi celles possibles
         continue
@@ -47,7 +46,7 @@ for prime, e in fac:
     # pour les autres nombres premiers
     s = R(-_sage_const_7 ).sqrt(all=True, extend=False)[_sage_const_0 ]  # racine de -7 mod p^e
     inv2 = R(_sage_const_2 )**-_sage_const_1                          # inverse de 2 modulo p^e
-    x = (-_sage_const_1  + s) * inv2                     # solution x = (-1 + sqrt(-7))/2 mod p^e
+    x = (_sage_const_1  + s) * inv2                     # solution x = (1 + sqrt(-7))/2 mod p^e
     L_moduli.append(modulus)
     L_roots.append(Integer(x))
 

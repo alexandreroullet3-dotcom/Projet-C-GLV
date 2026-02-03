@@ -2,31 +2,14 @@
 
 // Multiplication scalaire GLV  R = k * P
 
-void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const mpz_t k, const ECCurve *E, 
-    const Z2 *v1, const Z2 *v2, const mpz_t beta, mpz_t n, int type){
+void ec_scal_mul_glv(ECPointProj *R, const ECPointProj *P, const ECPointProj *phiP, const mpz_t k, const ECCurve *E, 
+    const Z2 *v1, const Z2 *v2, mpz_t n){
     // on commence par decomposer k
     Z2 v;
     z2_init(&v);
     glv_nearest_vector(&v, k, v1, v2, n);
 
-    // Calculons Q = phi(P) 
-    //pour cela on passe en affine pour simplifier les calcules et appliquer seulement x*beta
-    ECPointAffine P_aff, Q_aff;
-    ECPointProj Q;
-    ec_point_affine_init(&P_aff);
-    ec_point_affine_init(&Q_aff);
-    ec_point_proj_init(&Q);
-    proj_to_affine(&P_aff, P, E);
-    if (type == 1){ec_endo_phi1_affine(&Q_aff, &P_aff, E, beta);}
-    if (type == 2){ec_endo_phi2_affine(&Q_aff, &P_aff, E, beta);}
-    if (type == 3){ec_endo_phi3_affine(&Q_aff, &P_aff, E, beta);}
-    affine_to_proj(&Q, &Q_aff);
-
-
-    ec_double_scalar_multiplication(R, P, &Q, v.x, v.y, 2, E);
+    ec_double_scalar_multiplication(R, P, phiP, v.x, v.y, 2, E);
     
     z2_clear(&v);
-    ec_point_proj_clear(&Q);
-    ec_point_affine_clear(&P_aff);
-    ec_point_affine_clear(&Q_aff);
 }
