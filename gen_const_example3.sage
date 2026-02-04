@@ -1,48 +1,43 @@
-p = random_prime(2^256, lbound=2^255)
-while kronecker(-7, p) == -1:
+i = 1
+while i:
     p = random_prime(2^256, lbound=2^255)
-
-F = GF(p)
-E = EllipticCurve(F, [0, 0, -3/4, -2, -1])
-
-n = E.order()
-
-print("p =", hex(p))
-print("n =", hex(n))
-
-fac = n.factor()
-for p,e in fac:
-    if p == 2:
+    if kronecker(-7, p) == -1:
         continue
-    print(p, kronecker(-7, p))
+    F = GF(p)
+    E = EllipticCurve(F, [0, -3/4, 0, -2, -1])
+
+    n = E.order()
+    fac = n.factor()
+
+    # on cherche un facteur premier ~256 bits
+    for q,e in fac:
+        if q.nbits() > 250 and q.is_prime():
+            r = q
+            h = n // r
+            if h <= 16  :
+                print("GOOD CURVE FOUND")
+                print("p =", hex(p))
+                print("r =", hex(r))
+                print("h =", h)
+                i = 0
+
+
+print("n =", hex(n))
 print(fac)
 
 P = E.random_point()
-while P.order() != n:
-    P = E.random_point()
+print("n//P.order() ", hex(n//P.order()))
 print("P =", hex(P[0]), hex(P[1]), hex(P[2]))
 
-L_moduli = []
-L_roots = []
+r = fac[1][0]
+R = Integers(r)
+s = R(-7).sqrt(all=True, extend=False)[0]  # racine de -7 mod p^e
+inv2 = R(2)**-1                         # inverse de 2 modulo p^e
+x = (1 + s) * inv2
+print("lambda = ", hex(x))
 
-for prime, e in fac:
-    modulus = prime**e
-    R = Integers(modulus)
-
-    if prime == 2:
-        # pour 2^e, on teste toutes les valeurs possibles pour x^2-x+2 mod 2^e
-        roots = [x for x in range(modulus) if (x**2 - x + 2) % modulus == 0]
-        L_moduli.append(modulus)
-        L_roots.append(roots[0])  # on prend une solution parmi celles possibles
-        continue
-
-    # pour les autres nombres premiers
-    s = R(-7).sqrt(all=True, extend=False)[0]  # racine de -7 mod p^e
-    inv2 = R(2)**-1                         # inverse de 2 modulo p^e
-    x = (1 + s) * inv2                     # solution x = (1 + sqrt(-7))/2 mod p^e
-    L_moduli.append(modulus)
-    L_roots.append(Integer(x))
-
-# Combiner toutes les solutions avec CRT
-racine = crt(L_roots, L_moduli)
-print("lambda = ", hex(racine))
+R = Integers(p)
+t = R(-7).sqrt(all=True, extend=False)[0]  # racine de -7 mod p^e
+inv2 = R(2)**-1                         # inverse de 2 modulo p^e
+y = (1 + t) * inv2
+print("beta = ", hex(y))

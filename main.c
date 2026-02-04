@@ -106,12 +106,9 @@ int main() {
     ec_point_proj_clear(&test_phi);
     printf("----------------------------------------\n\n");
 
-    //ec_scalar_mul_proj(&R_classic, &P, n, &E);
-    //gmp_printf("nP=(%Zx, %Zx, %Zx)\n", R_classic.X, R_classic.Y, R_classic.Z);
-    //printf("%d\n", R_classic.infinity);
     
     printf("Entrez un nombre :\n");
-    printf("1 pour utiliser GLV sur 10000 entiers aléatoires et constater l'accélération\n");
+    printf("1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n");
     printf("2 pour utiliser GLV sur un exemple spécifique\n");
     printf("3 pour une génération de clé Diffie-Hellmann\n");
     int option;
@@ -119,7 +116,7 @@ int main() {
 
     if (option == 1){
     // ---------- 2. Boucle de tests ----------
-    const int N_TESTS = 10000;
+    const int N_TESTS = 1000;
     mpz_t k;
     mpz_init(k);
 

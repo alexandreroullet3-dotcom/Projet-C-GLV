@@ -26,6 +26,8 @@ void calculer_phiP_optimise(GLVCurve *curve, int type) {
     ec_point_affine_clear(&phiP_aff);
 }
 
+// Valeurs tabulées et trouvées en ligne
+
 void init_secp256k1_curve(GLVCurve *curve) {
     mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, NULL);
     mpz_set_ui(curve->E.a, 0);
@@ -49,6 +51,8 @@ void init_secp256k1_curve(GLVCurve *curve) {
     z2_init(&curve->v1); z2_init(&curve->v2);
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 }
+
+//Valeurs calculées avec gen_const_example2.sage
 
 void init_example2_curve(GLVCurve *curve) {
     mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, NULL);
@@ -74,6 +78,8 @@ void init_example2_curve(GLVCurve *curve) {
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 }
 
+//Valeurs calculées avec gen_const_example3.sage
+
 void init_example3_curve(GLVCurve *curve) {
     mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, curve->E.a2, NULL);
     mpz_t t; mpz_init_set_ui(t, 4);
@@ -82,8 +88,9 @@ void init_example3_curve(GLVCurve *curve) {
     mpz_set_si(curve->E.b, -1);
     
     // --- CORRECTION TYPE 3 : Suppression des "0x" pour p et n ---
-    mpz_set_str(curve->E.p, "b67e57937fad77013fa77527b678e2d9056747a359a88a044c9c5a431c85372b", 16);
-    mpz_set_str(curve->n, "b67e57937fad77013fa77527b678e2d97d0bdb060e17a8cd13ae56ddeb4e66e0", 16);
+    // ici on a n = h*r avec h=4, mais on ne fait GLV que sur le sous-groupe d'ordre r
+    mpz_set_str(curve->E.p, "ba41f30a2231820b3fa2957bae0b9fed1801dff14e9cded971efdb63aeb369d5", 16);
+    mpz_set_str(curve->n, "2e907cc2888c6082cfe8a55eeb82e7faf521130fcfa0ca47fa6ecebf5bc4759b", 16);
 
     mpz_invert(curve->E.a2, t, curve->E.p);
     mpz_mul_ui(curve->E.a2, curve->E.a2, 3);
@@ -94,15 +101,15 @@ void init_example3_curve(GLVCurve *curve) {
     ec_point_proj_init(&curve->phiP);
     
     // --- CORRECTION TYPE 3 : Suppression des "0x" pour les coordonnées ---
-    mpz_set_str(curve->P.X, "7a4ec4f1a9c0b1e3a12f1044099f5ef280eddb93240f9c49f6963f158b5d9a1e", 16);
-    mpz_set_str(curve->P.Y, "7d156c0124cc06b1ae06e598925c39f5cd9c4985aa46e93b6e59919d55531890", 16);
+    mpz_set_str(curve->P.X, "b926c0c1e0bb366767cef2ecb7b6b0363611073bb6caeec225040dbd6986d21c", 16);
+    mpz_set_str(curve->P.Y, "583d94cf7256ce2c92dbd84aac314a0c699a4e3b94b75baf83d67cd5dd54d11d", 16);
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
     mpz_clear(t);
 
     // --- CORRECTION TYPE 3 : Initialiser lambda AVANT trouver_constantes_glv (et sans 0x) ---
-    mpz_set_str(curve->lambda, "3cd4c7dbd539d255bfe27c6292284b9dd459490204b28d99b13a1cf4a3c4ccf5", 16);
-    mpz_set_str(curve->beta, "687d2bd31b3b44c496ef57ab0219526715054aed8e7c22e6e9ed9310f5f90bb6", 16);
+    mpz_set_str(curve->lambda, "1ea1f990009d0fe14b48af8f43d1a1bc32a0e228508b71c353c0be059898928", 16);
+    mpz_set_str(curve->beta, "660bd4979c65fd51364f5530f1ef8e4ceaeaccdb85033f184764b3a1551c8c5c", 16);
     //trouver_constantes_glv(curve->beta, &curve->E, &curve->P, curve->lambda, 3);
 
     calculer_phiP_optimise(curve, 3);
@@ -119,5 +126,4 @@ void init_example3_curve(GLVCurve *curve) {
     z2_init(&curve->v1); z2_init(&curve->v2);
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 
-    mpz_clear(t);
 }
