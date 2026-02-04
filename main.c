@@ -1,9 +1,10 @@
-#include <time.h>
-
 #include "EC_square_and_multiply_proj.h"
 #include "EC_GLV.h"
 #include "quadratic_solver.h"
 #include "glv_curves.h"
+#include "glv_acceleration.h"
+#include "EC_DH.h"
+#include "EC_GLV_mpz_t.h"
 
 
 int main() {
@@ -115,112 +116,15 @@ int main() {
     scanf("%d", &option);
 
     if (option == 1){
-    // ---------- 2. Boucle de tests ----------
-    const int N_TESTS = 1000;
-    mpz_t k;
-    mpz_init(k);
-
-    clock_t start_classic, end_classic;
-    clock_t start_glv, end_glv;
-
-    double time_classic = 0.0;
-    double time_glv = 0.0;
-
-    srand(time(NULL));
-    gmp_randstate_t state;
-    gmp_randinit_default(state); // Initialise le générateur par défaut
-
-    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
-    unsigned long seed = time(NULL);
-    gmp_randseed_ui(state, seed);
-
-    for (int i = 0; i < N_TESTS; i++) {
-        // k aléatoire modulo n
-        mpz_urandomm(k, state, n);
-
-        // -- Multiplication classique --
-        start_classic = clock();
-        ec_scalar_mul_proj(&R_classic, &P, k, &E);
-        end_classic = clock();
-        time_classic += (double)(end_classic - start_classic) / CLOCKS_PER_SEC;
-
-        // -- Multiplication GLV --
-        start_glv = clock();
-        ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
-        end_glv = clock();
-        time_glv += (double)(end_glv - start_glv) / CLOCKS_PER_SEC;
-
-        // Vérification facultative
-        if (ec_cmp_proj(&R_classic, &R_glv, &E) == 1) {
-            printf("Mismatch à l'itération %d !\n", i);
-            break;
-        }
+        glv_acceleration(&C);
     }
-
-    // ---------- 3. Résultat ----------
-    printf("\nTemps total pour %d multiplications scalaires sur des entiers aléatoires:\n", N_TESTS);
-    printf(" - Méthode classique : %.6f s\n", time_classic);
-    printf(" - Méthode GLV       : %.6f s\n", time_glv);
-    printf(" - Gain GLV          : %.2f x\n", time_classic / time_glv);
-    gmp_randclear(state);
-    mpz_clear(k);
-    };
-
 
     if (option == 2){
-    mpz_t k;
-    mpz_init(k);
-    ECPointAffine Raff;
-    ec_point_affine_init(&Raff);
-    
-    printf("Entrez l'entier k\n");
-    char hex_str[256]; // plus grand pour éviter overflow
-    if (scanf("%255s", hex_str) != 1) {
-        printf("Erreur de lecture de k\n");
-        return 0;
-    }
-
-    if (mpz_set_str(k, hex_str, 16) != 0) {
-        printf("Erreur : k n'est pas un hex valide !\n");
-        return 0;
-        }
-
-    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
-
-    ec_scalar_mul_proj(&R_classic, &P, k, &E);
-    if (ec_cmp_proj(&R_classic, &R_glv, &E) == 0){
-        printf("Le calcul avec GLV coïncide avec l'exponentiation rapide et le résultat est \n");
-        proj_to_affine(&Raff, &R_glv, &E);
-        gmp_printf("k*P = (%Zx, %Zx)\n", Raff.x, Raff.y);
-    }
-    else{
-        printf("Les résultats GLV et exponentiation rapide ne coïncident pas\n");
-        proj_to_affine(&Raff, &R_glv, &E);
-        gmp_printf("k*P = (%Zx, %Zx)\n", Raff.x, Raff.y);
-    }
+        EC_GLV_mpz_t(&C);
     }
 
     if (option == 3){
-    mpz_t k;
-    mpz_init(k);
-    srand(time(NULL));
-    gmp_randstate_t state;
-    gmp_randinit_default(state); // Initialise le générateur par défaut
-
-    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
-    unsigned long seed = time(NULL);
-    gmp_randseed_ui(state, seed);
-    // k aléatoire modulo n
-    mpz_urandomm(k, state, n);
-    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
-    ECPointAffine Raff;
-    ec_point_affine_init(&Raff);
-    proj_to_affine(&Raff, &R_glv, &E);
-    
-    gmp_printf("Votre clé publique est :\n(%Zx, %Zx)\nVotre clé privé est :\n%Zx\n", Raff.x, Raff.y, k);
-    ec_point_affine_clear(&Raff);
-    gmp_randclear(state);
-    mpz_clear(k);
+        ec_dh(&C);
     }
 
     // ---------- 4. Nettoyage ----------
@@ -232,6 +136,7 @@ int main() {
     z2_clear(&v1);
     z2_clear(&v2);
     ec_curve_clear(&E);
+    clear_curve(&C);
 
     return 0;
 }

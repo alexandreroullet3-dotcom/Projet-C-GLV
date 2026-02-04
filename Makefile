@@ -22,6 +22,9 @@ short_vectors.c \
 glv_decompose.c \
 quadratic_solver.c \
 glv_curves.c \
+glv_acceleration.c \
+EC_DH.c \
+EC_GLV_mpz_t.c \
 main.c
 
 OBJS := $(SRCS:.c=.o)

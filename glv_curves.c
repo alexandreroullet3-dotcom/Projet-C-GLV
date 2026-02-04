@@ -127,3 +127,12 @@ void init_example3_curve(GLVCurve *curve) {
     glv_basis(&curve->v1, &curve->v2, curve->n, curve->lambda);
 
 }
+
+void clear_curve(GLVCurve *curve){
+    mpz_clears(curve->beta, curve->lambda, curve->n, NULL);
+    ec_curve_clear(&curve->E);
+    ec_point_proj_clear(&curve->P);
+    ec_point_proj_clear(&curve->phiP);
+    z2_clear(&curve->v1);
+    z2_clear(&curve->v2);
+}
