@@ -13,15 +13,15 @@ void ec_scalar_mul_proj(ECPointProj *R,
                         const mpz_t k,
                         const ECCurve *E)
 {
-    ECPointProj Q;         // résultat temporaire initialisé au point à l'infini
+    ECPointProj Q; // Résultat temporaire initialisé au point à l'infini.
     ec_point_proj_init(&Q);
     Q.infinity = 1;
 
-    ECPointProj Pcopy;     // copie de P pour ne pas modifier l'original
+    ECPointProj Pcopy; // Copie de P pour ne pas modifier l'original.
     ec_point_proj_init(&Pcopy);
     ec_point_proj_copy(&Pcopy, P);
 
-    ECPointProj tmp;       // variable temporaire pour doublement/ajout
+    ECPointProj tmp; // Variable temporaire pour doublement/ajout.
     ec_point_proj_init(&tmp);
 
     size_t nbits = mpz_sizeinbase(k, 2);

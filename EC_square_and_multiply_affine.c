@@ -19,8 +19,8 @@ void ec_scalar_mul_affine(ECPointAffine *R,
     ec_point_affine_init(&Pcopy);
     ec_point_affine_init(&tmp);
 
-    Q.infinity = 1;                // Q = O
-    ec_point_affine_copy(&Pcopy, P); // copie de P
+    Q.infinity = 1;                  // Q = O
+    ec_point_affine_copy(&Pcopy, P); // Copie locale de P.
 
     size_t nbits = mpz_sizeinbase(k, 2);
     if (nbits == 0) {              // k = 0 -> R = O

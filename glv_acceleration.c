@@ -1,8 +1,15 @@
 #include "glv_acceleration.h"
 
-void glv_acceleration(const GLVCurve *curve){
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+/*
+ * Mesure l'accélération GLV sur un ensemble de scalaires aléatoires.
+ */
+void glv_acceleration(const GLVCurve *curve, int N_tests)
+{
     // ---------- Boucle de tests ----------
-    const int N_TESTS = 1000;
     mpz_t k;
     mpz_init(k);
 
@@ -15,15 +22,14 @@ void glv_acceleration(const GLVCurve *curve){
     double time_classic = 0.0;
     double time_glv = 0.0;
 
-    srand(time(NULL));
     gmp_randstate_t state;
     gmp_randinit_default(state); // Initialise le générateur par défaut
 
-    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
-    unsigned long seed = time(NULL);
+    // On peut le seeder avec le temps ou un autre nombre aléatoire
+    unsigned long seed = (unsigned long)time(NULL);
     gmp_randseed_ui(state, seed);
 
-    for (int i = 0; i < N_TESTS; i++) {
+    for (int i = 0; i < N_tests; i++) {
         // k aléatoire modulo n
         mpz_urandomm(k, state, curve->n);
 
@@ -46,13 +52,15 @@ void glv_acceleration(const GLVCurve *curve){
         }
     }
 
-    // ---------- 3. Résultat ----------
-    printf("\nTemps total pour %d multiplications scalaires sur des entiers aléatoires:\n", N_TESTS);
     printf(" - Méthode classique : %.6f s\n", time_classic);
     printf(" - Méthode GLV       : %.6f s\n", time_glv);
-    printf(" - Gain GLV          : %.2f x\n", time_classic / time_glv);
+    if (time_glv > 0.0) {
+        printf(" - Gain GLV          : %.2f x\n", time_classic / time_glv);
+    } else {
+        printf(" - Gain GLV          : n/a (temps GLV nul)\n");
+    }
     gmp_randclear(state);
     mpz_clear(k);
     ec_point_proj_clear(&R_classic);
     ec_point_proj_clear(&R_glv);
-    }
+}

@@ -1,10 +1,12 @@
-#ifndef GLV_ACCELERATION
-#define GLV_ACCELARTION
+#ifndef GLV_ACCELERATION_H
+#define GLV_ACCELERATION_H
 
-#include "glv_curves.h"
 #include "EC_GLV.h"
-#include <time.h>
+#include "glv_curves.h"
 
-void glv_acceleration(const GLVCurve *curve);
+/*
+ * Mesure l'accélération GLV sur une courbe donnée.
+ */
+void glv_acceleration(const GLVCurve *curve, int N_tests);
 
 #endif

@@ -1,15 +1,24 @@
 #include "double_scalar_multiplication.h"
 
+#include <stdlib.h>
+
 /*
  * =========================
  * Double multiplication scalaire : R = k*P + l*Q
  * Algorithme de Shamir avec fenêtres de taille w
  * =========================
  */
-void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const ECPointProj *Q,
-                                const mpz_t k, const mpz_t l, unsigned int w, const ECCurve *E)
+void ec_double_scalar_multiplication(ECPointProj *R,
+                                     const ECPointProj *P,
+                                     const ECPointProj *Q,
+                                     const mpz_t k,
+                                     const mpz_t l,
+                                     unsigned int w,
+                                     const ECCurve *E)
 {
-    if (w == 0 || w > 4) return; // vérification taille fenêtre
+    if (w == 0 || w > 4) {
+        return; // Failsafe, il ne faut pas w trop grand, sinon le temps de calcul explose
+    }
 
     unsigned int M = 1U << w;
 
@@ -19,20 +28,18 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
     mpz_t ksgn, lsgn;
     mpz_inits(ksgn, lsgn, NULL);
     
-    if (mpz_sgn(k)<0){
+    if (mpz_sgn(k) < 0) {
         ec_point_proj_neg(&Pprime, P);
         mpz_neg(ksgn, k);
-    }
-    else{
+    } else {
         ec_point_proj_copy(&Pprime, P);
         mpz_set(ksgn, k);
     }
 
-    if (mpz_sgn(l)<0){
+    if (mpz_sgn(l) < 0) {
         ec_point_proj_neg(&Qprime, Q);
         mpz_neg(lsgn, l);
-    }
-    else{
+    } else {
         ec_point_proj_copy(&Qprime, Q);
         mpz_set(lsgn, l);
     }
@@ -41,7 +48,12 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
        Pré-calcul des tables T[i][j] = i*P + j*Q
        ========================= */
     ECPointProj **T = precompute_table(&Pprime, &Qprime, w, E);
-    if (!T) return;
+    if (!T) {
+        ec_point_proj_clear(&Pprime);
+        ec_point_proj_clear(&Qprime);
+        mpz_clears(ksgn, lsgn, NULL);
+        return;
+    }
 
     /* =========================
        Initialisation Rtmp = O
@@ -64,19 +76,22 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
     for (int i = (int)d - 1; i >= 0; i--) {
 
         // Rtmp = 2^w * Rtmp
-        for (unsigned int j = 0; j < w; j++)
+        for (unsigned int j = 0; j < w; j++) {
             ec_point_double_proj(&Rtmp, &Rtmp, E);
+        }
 
         // Extraire les w bits correspondants
         unsigned int uk = 0, ul = 0;
         for (unsigned int b = 0; b < w; b++) {
             size_t bit = i * w + b;
 
-            if (bit < nb_k && mpz_tstbit(ksgn, bit))
+            if (bit < nb_k && mpz_tstbit(ksgn, bit)) {
                 uk |= (1U << b);
+            }
 
-            if (bit < nb_l && mpz_tstbit(lsgn, bit))
+            if (bit < nb_l && mpz_tstbit(lsgn, bit)) {
                 ul |= (1U << b);
+            }
         }
 
         ec_point_add_proj(&Rtmp, &Rtmp, &T[uk][ul], E);
@@ -99,8 +114,9 @@ void ec_double_scalar_multiplication(ECPointProj *R, const ECPointProj *P, const
     mpz_clears(ksgn, lsgn, NULL);
 
     for (unsigned int i = 0; i < M; i++) {
-        for (unsigned int j = 0; j < M; j++)
+        for (unsigned int j = 0; j < M; j++) {
             ec_point_proj_clear(&T[i][j]);
+        }
         free(T[i]);
     }
     free(T);

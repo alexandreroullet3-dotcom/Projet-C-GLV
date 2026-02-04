@@ -2,9 +2,6 @@
 #define EC_STRUCT_H
 
 #include <gmp.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 
 /*
  * =========================
@@ -40,10 +37,10 @@ typedef struct {
  *   y^2 = x^3 + a x + b (mod p)
  */
 typedef struct {
-    mpz_t p; /* module premier */
-    mpz_t a; /* coefficient a */
-    mpz_t b; /* coefficient b */
-    mpz_t a2; /* coefficient devant x^2 (vaut 0 par défaut sauf dans l'exemple 3)*/
+    mpz_t p;  /* module premier */
+    mpz_t a;  /* coefficient a */
+    mpz_t b;  /* coefficient b */
+    mpz_t a2; /* coefficient devant x^2 (0 par défaut sauf exemple 3) */
 } ECCurve;
 
 /*
@@ -91,10 +88,10 @@ void affine_to_proj(ECPointProj *R, const ECPointAffine *P);
 void proj_to_affine(ECPointAffine *R, const ECPointProj *P, const ECCurve *E);
 
 
-/* comparaison deux deux point */
+/* Comparaison de deux points affines. */
 int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q);
 
-/* comparaison deux deux point */
+/* Comparaison de deux points projectifs. */
 int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E);
 
 /*

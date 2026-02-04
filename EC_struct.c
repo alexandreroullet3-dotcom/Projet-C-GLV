@@ -7,20 +7,23 @@
  */
 
 /* Initialisation d'un point affine : x et y sont initialisés, point à l'infini par défaut */
-void ec_point_affine_init(ECPointAffine *P) {
+void ec_point_affine_init(ECPointAffine *P)
+{
     mpz_init(P->x);
     mpz_init(P->y);
     P->infinity = 1; /* point à l'infini */
 }
 
 /* Libération de la mémoire allouée pour un point affine */
-void ec_point_affine_clear(ECPointAffine *P) {
+void ec_point_affine_clear(ECPointAffine *P)
+{
     mpz_clear(P->x);
     mpz_clear(P->y);
 }
 
 /* Copie d'un point affine : R <- P */
-void ec_point_affine_copy(ECPointAffine *R, const ECPointAffine *P) {
+void ec_point_affine_copy(ECPointAffine *R, const ECPointAffine *P)
+{
     mpz_set(R->x, P->x);
     mpz_set(R->y, P->y);
     R->infinity = P->infinity;
@@ -34,7 +37,8 @@ void ec_point_affine_copy(ECPointAffine *R, const ECPointAffine *P) {
  */
 
 /* Initialisation d'un point projectif : X,Y,Z initialisés, point à l'infini */
-void ec_point_proj_init(ECPointProj *P) {
+void ec_point_proj_init(ECPointProj *P)
+{
     mpz_init(P->X);
     mpz_init(P->Y);
     mpz_init(P->Z);
@@ -42,14 +46,16 @@ void ec_point_proj_init(ECPointProj *P) {
 }
 
 /* Libération de la mémoire allouée pour un point projectif */
-void ec_point_proj_clear(ECPointProj *P) {
+void ec_point_proj_clear(ECPointProj *P)
+{
     mpz_clear(P->X);
     mpz_clear(P->Y);
     mpz_clear(P->Z);
 }
 
 /* Copie d'un point projectif : R <- P */
-void ec_point_proj_copy(ECPointProj *R, const ECPointProj *P) {
+void ec_point_proj_copy(ECPointProj *R, const ECPointProj *P)
+{
     mpz_set(R->X, P->X);
     mpz_set(R->Y, P->Y);
     mpz_set(R->Z, P->Z);
@@ -57,6 +63,9 @@ void ec_point_proj_copy(ECPointProj *R, const ECPointProj *P) {
 }
 
 
+/*
+ * Conversion affine -> projectif.
+ */
 void affine_to_proj(ECPointProj *R, const ECPointAffine *P)
 {
     if (P->infinity) {
@@ -69,8 +78,9 @@ void affine_to_proj(ECPointProj *R, const ECPointAffine *P)
     R->infinity = 0;
 }
 
-/*Conversions de points*/
-
+/*
+ * Conversion projectif -> affine.
+ */
 void proj_to_affine(ECPointAffine *R,
                     const ECPointProj *P,
                     const ECCurve *E)
@@ -105,7 +115,8 @@ void proj_to_affine(ECPointAffine *R,
 // Compare deux points P et Q.
 // Retourne 0 si P == Q (identiques).
 // Retourne 1 si P != Q (différents).
-int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q) {
+int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q)
+{
     if (P->infinity && Q->infinity) {
         return 0;
     }
@@ -121,7 +132,8 @@ int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q) {
     return 0;
 }
 
-int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E){
+int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E)
+{
     if (P->infinity && Q->infinity) {
         return 0;
     }
@@ -150,11 +162,11 @@ int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E){
     mpz_mul(yq, yq, P->Z);
     mpz_mod(yq, yq, E->p);
     
-    if  (mpz_cmp(xp, xq) != 0){
+    if (mpz_cmp(xp, xq) != 0) {
         mpz_clears(xp, yp, xq, yq, NULL);
         return 1;
     }
-    if  (mpz_cmp(yp, yq) != 0){
+    if (mpz_cmp(yp, yq) != 0) {
         mpz_clears(xp, yp, xq, yq, NULL);
         return 1;
     }
@@ -169,15 +181,17 @@ int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E){
  */
 
 /* Initialisation des paramètres de la courbe elliptique */
-void ec_curve_init(ECCurve *E) {
+void ec_curve_init(ECCurve *E)
+{
     mpz_init(E->p);
     mpz_init(E->a);
     mpz_init(E->b);
-    mpz_init_set_ui(E->a2, 0);
+    mpz_init_set_ui(E->a2, 0); //Vaut 0 par défaut, non nul seulement dans l'exemple 3
 }
 
 /* Libération de la mémoire associée à la courbe elliptique */
-void ec_curve_clear(ECCurve *E) {
+void ec_curve_clear(ECCurve *E)
+{
     mpz_clear(E->p);
     mpz_clear(E->a);
     mpz_clear(E->b);

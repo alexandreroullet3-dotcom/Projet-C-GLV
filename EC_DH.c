@@ -1,18 +1,25 @@
 #include "EC_DH.h"
 
-void ec_dh(GLVCurve *curve){
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+/*
+ * Génération d'une paire de clés Diffie-Hellman via GLV.
+ */
+void ec_dh(GLVCurve *curve)
+{
     mpz_t k;
     mpz_init(k);
     ECPointAffine Raff;
     ECPointProj R_glv;
     ec_point_affine_init(&Raff);
     ec_point_proj_init(&R_glv);
-    srand(time(NULL));
     gmp_randstate_t state;
     gmp_randinit_default(state); // Initialise le générateur par défaut
 
-    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
-    unsigned long seed = time(NULL);
+    // On peut le seeder avec le temps ou un autre nombre aléatoire
+    unsigned long seed = (unsigned long)time(NULL);
     gmp_randseed_ui(state, seed);
     // k aléatoire modulo n
     mpz_urandomm(k, state, curve->n);
@@ -24,4 +31,4 @@ void ec_dh(GLVCurve *curve){
     mpz_clear(k);
     ec_point_affine_clear(&Raff);
     ec_point_proj_clear(&R_glv);
-    }
+}

@@ -24,7 +24,7 @@ quadratic_solver.c \
 glv_curves.c \
 glv_acceleration.c \
 EC_DH.c \
-EC_GLV_mpz_t.c \
+EC_GLV_demo.c \
 main.c
 
 OBJS := $(SRCS:.c=.o)

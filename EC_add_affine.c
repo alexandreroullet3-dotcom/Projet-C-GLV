@@ -59,12 +59,20 @@ void ec_point_double_affine(ECPointAffine *R, const ECPointAffine *P, const ECCu
  * Formules classiques en coordonnées affines
  * =========================
  */
-void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P, 
-                        const ECPointAffine *Q, const ECCurve *E)
+void ec_point_add_affine(ECPointAffine *R,
+                         const ECPointAffine *P,
+                         const ECPointAffine *Q,
+                         const ECCurve *E)
 {
     // 1. Gestion des points à l'infini
-    if (P->infinity) { ec_point_affine_copy(R, Q); return; }
-    if (Q->infinity) { ec_point_affine_copy(R, P); return; }
+    if (P->infinity) {
+        ec_point_affine_copy(R, Q);
+        return;
+    }
+    if (Q->infinity) {
+        ec_point_affine_copy(R, P);
+        return;
+    }
 
     // 2. Cas x1 == x2
     if (mpz_cmp(P->x, Q->x) == 0) {
@@ -112,11 +120,14 @@ void ec_point_add_affine(ECPointAffine *R, const ECPointAffine *P,
     mpz_clears(lambda, num, den, x3, y3, NULL);
 }
 
-void ec_point_affine_neg(ECPointAffine *R, const ECPointAffine *P, const ECCurve *E){
-    if (P->infinity){
+/*
+ * Négation d'un point affine.
+ */
+void ec_point_affine_neg(ECPointAffine *R, const ECPointAffine *P, const ECCurve *E)
+{
+    if (P->infinity) {
         R->infinity = 1;
-    }
-    else{
+    } else {
         R->infinity = 0;
         mpz_set(R->x, P->x);
         mpz_neg(R->y, P->y);

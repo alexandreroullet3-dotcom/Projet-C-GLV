@@ -92,8 +92,14 @@ void ec_point_add_proj(ECPointProj *R,
                        const ECPointProj *Q,
                        const ECCurve *E)
 {
-    if (P->infinity) { ec_point_proj_copy(R, Q); return; }
-    if (Q->infinity) { ec_point_proj_copy(R, P); return; }
+    if (P->infinity) {
+        ec_point_proj_copy(R, Q);
+        return;
+    }
+    if (Q->infinity) {
+        ec_point_proj_copy(R, P);
+        return;
+    }
 
     mpz_t Z1Z1, Z2Z2, U1, U2, S1, S2;
     mpz_t H, Rr, H2, H3, U1H2, tmp;
@@ -181,11 +187,14 @@ clear:
 }
 
 
-void ec_point_proj_neg(ECPointProj *R, const ECPointProj *P){
-    if (P->infinity){
+/*
+ * Négation d'un point projectif.
+ */
+void ec_point_proj_neg(ECPointProj *R, const ECPointProj *P)
+{
+    if (P->infinity) {
         R->infinity = 1;
-    }
-    else{
+    } else {
         R->infinity = 0;
         mpz_set(R->X, P->X);
         mpz_neg(R->Y, P->Y);

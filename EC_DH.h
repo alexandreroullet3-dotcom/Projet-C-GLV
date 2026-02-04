@@ -1,10 +1,12 @@
-#ifndef EC_DH
-#define EC_DH
+#ifndef EC_DH_H
+#define EC_DH_H
 
-#include "glv_curves.h"
 #include "EC_GLV.h"
-#include <time.h>
+#include "glv_curves.h"
 
+/*
+ * Génération de clés Diffie-Hellman avec GLV.
+ */
 void ec_dh(GLVCurve *curve);
 
 #endif

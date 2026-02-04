@@ -174,7 +174,7 @@ Avec $k$ de taille $n$, $k_1$ et $k_2$ sont de taille approximative $\sqrt{n}$ (
 Cette décomposition permet de paralléliser le calcul ou d'utiliser des techniques d'entrelacement, réduisant théoriquement le nombre de doublements de moitié.
 
 \section{Objectifs du Rapport}
-Ce document a pour but de fournir une référence complète sur la méthode GLV. Nous aborderons :
+Ce document a pour but de fournir une référence sur la méthode GLV. Nous aborderons :
 \begin{itemize}
     \item Les fondements mathématiques rigoureux des courbes elliptiques (coordonnées Jacobiennes, corps quadratiques).
     \item L'analyse détaillée des 4 types d'endomorphismes GLV utilisés pour cette méthode (simples et complexes).
@@ -217,7 +217,7 @@ Les coordonnées du point résultant sont alors données par :
 \end{align}
 
 \begin{remarque}
-Ces formules nécessitent le calcul de l'inverse modulaire du dénominateur pour obtenir $\lambda$. Cette opération d'inversion est très coûteuse en temps de calcul (environ 20 à 80 multiplications), ce qui motive l'utilisation de systèmes de coordonnées alternatifs pour l'éviter (voir section suivante).
+Ces formules nécessitent le calcul de l'inverse modulaire du dénominateur pour obtenir $\lambda$. Cette opération d'inversion est très coûteuse en temps de calcul (environ 20 à 80 fois le temps d'une multiplication), ce qui motive l'utilisation de systèmes de coordonnées alternatifs pour l'éviter (voir section suivante).
 \end{remarque}
 
 \section{Optimisation des Coordonnées : Le Système Jacobien}
@@ -233,9 +233,9 @@ Pour justifier le choix des coordonnées Jacobiennes, il est essentiel de compar
 
 Nous notons :
 \begin{itemize}
-    \item \textbf{M} : Multiplication dans $\mathbb{F}_p$
+    \item \textbf{M} : Temps d'une multiplication dans $\mathbb{F}_p$
     \item \textbf{S} : Mise au carré (Squaring) dans $\mathbb{F}_p$ ($1S \approx 0.8M$)
-    \item \textbf{I} : Inversion modulaire. C'est l'opération critique, coûtant entre \textbf{30 et 80 M} selon l'architecture.
+    \item \textbf{I} : Inversion modulaire. C'est l'opération critique, coûtant entre \textbf{20 et 80 M} selon l'architecture.
 \end{itemize}
 
 \begin{table}[H]
@@ -255,7 +255,7 @@ Projectif Std $(X:Y:Z)$ & $7M + 5S$ & $12M + 2S$ & Doublement trop lourd \\
 
 \textbf{Pourquoi les coordonnées Jacobiennes s'imposent-elles ?}
 \begin{enumerate}
-    \item \textbf{Élimination de l'Inversion :} Contrairement à l'affine, on ne fait aucune inversion $I$ pendant la boucle. On en fait une seule à la toute fin (Conversion Finale).
+    \item \textbf{Élimination de l'Inversion :} Contrairement à l'affine, on ne fait aucune inversion $I$ pendant la boucle. On en fait une seule à la toute fin (Conversion finale en coordonées affines).
     \item \textbf{Optimisation du Doublement :} Dans une multiplication scalaire, on fait beaucoup plus de doublements que d'additions.
     \begin{itemize}
         \item Le Projectif Standard coûte $\approx 7M$ par doublement.
@@ -292,26 +292,8 @@ Ce chapitre constitue le cœur théorique de notre analyse. Contrairement aux ap
 \section{Cas Simples (Endomorphismes de Degré 1)}
 Ces endomorphismes consistent en une simple multiplication des coordonnées par une constante dans $\mathbb{F}_p$. Leur coût est négligeable (1 ou 2 multiplications modulaires).
 
-\subsection{Type 1 : Courbes avec $D=4$ ($j=1728$)}
-Ce cas concerne une famille spécifique de courbes elliptiques définies sur un corps premier, admettant un endomorphisme efficace.
 
-\begin{itemize}
-    \item \textbf{Forme :} $y^2 = x^3 + ax$ sur $\mathbb{F}_p$ avec $p \equiv 1 \pmod 4$.
-    \item \textbf{Endomorphisme :} $\phi(x, y) = (-x, \alpha y)$ où $\alpha$ est un élément d'ordre 4 dans $\mathbb{F}_p$ (c'est-à-dire $\alpha^2 \equiv -1 \pmod p$).
-    \item \textbf{Polynôme caractéristique :} $\lambda^2 + 1 \equiv 0 \pmod n$.
-    \item \textbf{Calcul de $\lambda$ :} La valeur propre correspond à une racine carrée modulaire de $-1$, soit $\lambda \equiv \pm \sqrt{-1} \pmod n$.
-\end{itemize}
-
-\begin{remarque}
-Il est crucial de distinguer $\alpha$ et $\lambda$ :
-\begin{itemize}
-    \item $\alpha$ est une constante du corps de base $\mathbb{F}_p$ utilisée pour calculer les nouvelles coordonnées.
-    \item $\lambda$ est l'entier correspondant dans le groupe scalaire.
-\end{itemize}
-L'intérêt de la méthode réside dans le fait que l'opération géométrique $(-x, \alpha y)$ ne coûte qu'une seule multiplication dans $\mathbb{F}_p$, remplaçant ainsi instantanément la multiplication par le grand scalaire $\lambda$.
-\end{remarque}
-\newpage
-\subsection{Type 2 : Courbes avec $D=3$ ($j=0$)}
+\subsection{Type 1 : Courbes avec $D=3$ ($j=0$)}
 C'est le cas le plus célèbre, utilisé notamment par la courbe \textbf{secp256k1} (Bitcoin).
 \begin{itemize}
     \item\textbf{Forme :} $y^2 = x^3 + b$ sur $\mathbb{F}_p$ avec $p \equiv 1 \pmod 3$.
@@ -319,6 +301,28 @@ C'est le cas le plus célèbre, utilisé notamment par la courbe \textbf{secp256
     \item \textbf{Polynôme caractéristique :} $\lambda^2 + \lambda + 1 \equiv 0 \pmod n$.
     \item \textbf{Calcul de $\lambda$ :} On résout l'équation quadratique pour obtenir $\lambda = \frac{-1 \pm \sqrt{-3}}{2} \pmod n$.
 \end{itemize}
+
+\begin{remarque}
+Il est crucial de distinguer $\beta$ et $\lambda$ :
+\begin{itemize}
+    \item $\beta$ est une constante du corps de base $\mathbb{F}_p$ utilisée pour calculer les nouvelles coordonnées.
+    \item $\lambda$ est l'entier correspondant dans le groupe scalaire.
+\end{itemize}
+L'intérêt de la méthode réside dans le fait que l'opération géométrique $(\beta x, y)$ ne coûte qu'une seule multiplication dans $\mathbb{F}_p$, remplaçant ainsi instantanément la multiplication par le grand scalaire $\lambda$.
+\end{remarque}
+
+\subsection{Type 2 : Courbes avec $D=4$ ($j=1728$)}
+Ce cas concerne une famille spécifique de courbes elliptiques définies sur un corps premier, admettant un endomorphisme efficace.
+\begin{itemize}
+    \item \textbf{Forme :} $y^2 = x^3 + ax$ sur $\mathbb{F}_p$ avec $p \equiv 1 \pmod 4$.
+    \item \textbf{Endomorphisme :} $\phi(x, y) = (-x, \alpha y)$ où $\alpha$ est un élément d'ordre 4 dans $\mathbb{F}_p$ (c'est-à-dire $\alpha^2 \equiv -1 \pmod p$).
+    \item \textbf{Polynôme caractéristique :} $\lambda^2 + 1 \equiv 0 \pmod n$.
+    \item \textbf{Calcul de $\lambda$ :} La valeur propre correspond à une racine carrée modulaire de $-1$, soit $\lambda \equiv \pm \sqrt{-1} \pmod n$.
+\end{itemize}
+
+
+\newpage
+
 
 \section{Cas Complexes (Endomorphismes Rationnels)}
 Pour certaines courbes, l'endomorphisme $\phi$ ne se réduit pas à une multiplication linéaire. Il s'agit d'une fraction rationnelle. Le coût d'évaluation est plus élevé (plusieurs multiplications dans le corps), mais la méthode reste efficace.
@@ -365,6 +369,10 @@ L'appartenance d'une courbe à l'une de ces familles (identifiée par son invari
 Cependant, pour que la méthode GLV soit applicable en pratique, l'endomorphisme doit être défini sur $\mathbb{F}_p$. Cela impose une condition de congruence sur le nombre premier $p$ (par exemple $p \equiv 1 \pmod 4$ pour le type $D=4$), assurant que les constantes nécessaires à $\phi$ existent bien dans le corps de base.
 \end{remarque}
 
+\begin{remarque}
+    Dans notre programme, nous avons seulement implémenté la méthode GLV sur le type 1, 2 et 3, avec les valeurs officielles de secp256k1 pour le type 1, et des valeurs générés aléatoirement vérifiant les conditions pour le type 2 et 3.
+\end{remarque}
+
 \newpage
 
 % ============================================================
@@ -379,7 +387,7 @@ Considérons l'homomorphisme $f : \mathbb{Z}^2 \to \mathbb{Z}_n$ défini par $f(
 Le noyau de cet homomorphisme est un réseau $\mathcal{L}$ de dimension 2 :
 \[ \mathcal{L} = \{ (u, v) \in \mathbb{Z}^2 \mid u + v\lambda \equiv 0 \pmod n \} \]
 Le problème de la décomposition revient à trouver un vecteur $v \in \mathcal{L}$ qui soit le plus proche possible du vecteur cible $(k, 0)$.
-Si nous trouvons un tel $v$, alors le vecteur différence $u = (k, 0) - v = (k_1, k_2)$ sera court (sa norme euclidienne est petite), et par construction :
+Si nous trouvons un tel $v$, alors le vecteur différence $u = (k, 0) - v $ sera court (sa norme euclidienne est petite), et par construction, si on note $u=(k_1, k_2),\, v= (v_1, v_2)$, on a :
 \[ k_1 + k_2\lambda \equiv (k - v_1) + (-v_2)\lambda \equiv k - (v_1 + v_2\lambda) \equiv k \pmod n \]
 
 \section{Étape 1 : Génération de la Base (Euclide Étendu)}
@@ -444,8 +452,8 @@ Le projet est structuré selon une logique de couches, séparant l'arithmétique
 \fbox{
     \parbox{12cm}{\centering
     \textbf{1. Interface et Benchmarks} \\
-    \small \textit{Point d'entrée, mesures de temps et tests} \\
-    \texttt{main.c, gen\_const\_*.sage.py}}
+    \small \textit{Point d'entrée, mesures de temps, tests, et générations de clés Diffie-Hellmann} \\
+    \texttt{main.c, gen\_const\_*.sage.py, glv\_acceleration.c, EC\_DH.c, EC\_GLV\_demo.c}}
 }
 
 % Jonction 1
@@ -456,7 +464,7 @@ $\downarrow$
     \parbox{12cm}{\centering
     \textbf{2. Logique de Contrôle GLV} \\
     \small \textit{Orchestration, Décomposition (Babai) et Réduction} \\
-    \texttt{EC\_GLV.c, glv\_decompose.c, short\_vectors.c}}
+    \texttt{EC\_GLV.c, glv\_decompose.c, short\_vectors.c, glv\_curves.c}}
 }
 
 % Jonction 2
@@ -489,7 +497,18 @@ $\downarrow$
     \parbox{12cm}{\centering
     \textbf{5. Noyau Arithmétique (GMP)} \\
     \small \textit{Opérations de base (Add/Double) Affines \& Projectives} \\
-    \texttt{EC\_add\_proj.c, EC\_struct.c, EC\_conversions.c}}
+    \texttt{EC\_add\_proj.c, EC\_square\_and\_multiply\_proj.c}}
+}
+
+% Jonction 5
+$\downarrow$
+
+% --- Couche 6 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{6. Structures informatiques (courbes, points) (GMP)} \\
+    \small \textit{Allocations, désallocations, conversions entre affine \& projectif, tests d'égalités} \\
+    \texttt{EC\_struct.c}}
 }
 
 \caption{Organisation hiérarchique détaillée des fichiers sources}
@@ -500,7 +519,7 @@ $\downarrow$
 Au-delà de l'application théorique de la méthode GLV, quatre optimisations majeures ont été intégrées pour réduire drastiquement le temps d'exécution.
 
 \subsection{Coordonnées Projectives Jacobiennes}
-L'inversion modulaire est l'opération la plus coûteuse dans un corps fini $\mathbb{F}_p$ (coûtant environ 100 fois plus cher qu'une multiplication). Dans une multiplication scalaire classique, chaque addition de points nécessite une inversion pour calculer la pente de la droite ($\lambda$).
+L'inversion modulaire est l'opération la plus coûteuse dans un corps fini $\mathbb{F}_p$ (coûtant environ 80 fois plus cher qu'une multiplication). Dans une multiplication scalaire classique, chaque addition de points nécessite une inversion pour calculer la pente de la droite ($\lambda$).
 
 Pour éliminer ce frein, nous travaillons en \textbf{coordonnées Jacobiennes} $(X : Y : Z)$. Un point projectif correspond au point affine :
 \begin{equation}
@@ -522,7 +541,7 @@ Cette approche garantit une complexité constante $O(1)$, rendant l'étape de d�
 
 \subsection{Multiplication Simultanée avec Fenêtrage (Interleaving w-ary)}
 L'optimisation la plus avancée du projet se trouve dans \texttt{double\_scalar\_multiplication.c}.
-Pour calculer la combinaison linéaire $k_1P + k_2Q$, nous n'effectuons pas deux multiplications séparées. Nous utilisons une méthode d'entrelacement (Interleaving) combinée à du \textbf{fenêtrage (Windowing)} de taille $w$.
+Pour calculer la combinaison linéaire $k_1P + k_2Q$, nous n'effectuons pas deux multiplications séparées. Nous utilisons une méthode d'entrelacement (Interleaving) combinée à du \textbf{fenêtrage (Windowing)} de taille $w$. Le paramètre $w$ doit être choisi judicieusement, plus il est grand, moins la boucle principale aura d'itérations, mais plus le temps de précalcul sera long (empiriquement, $w=2$ donne la meilleur accélération).
 
 \begin{enumerate}
     \item \textbf{Précalcul :} Une table $T$ est générée (dans \texttt{precompute\_table.c}) contenant les valeurs pré-calculées $uP + vQ$ pour toutes les combinaisons possibles de fenêtres $0 \le u, v < 2^w$.
@@ -534,14 +553,14 @@ Cette technique, souvent appelée \textit{Straus-Shamir optimization}, réduit c
 
 \subsection{Endomorphismes Efficaces}
 Le calcul de l'image $\phi(P)$ (le point $Q$) est implémenté nativement pour plusieurs types de courbes via \texttt{EC\_endo\_phi\_GLV.c}.
-Pour les courbes $j=0$ (Type 2) et $j=1728$ (Type 1), l'opération se résume à une simple multiplication modulaire d'une coordonnée par une racine de l'unité $\beta$.
+Pour les courbes $j=0$ (Type 1) et $j=1728$ (Type 2), l'opération se résume à une simple multiplication modulaire d'une coordonnée par une racine de l'unité $\beta$.
 Cette opération étant quasi-instantanée (complexité équivalente à une multiplication dans $\mathbb{F}_p$), elle valide l'hypothèse fondamentale de GLV : le coût d'obtention du deuxième point $Q$ est « gratuit ».
 
 \section{Gestion de la Mémoire et Robustesse}
 L'utilisation de la bibliothèque GMP impose une gestion rigoureuse de la mémoire dynamique.
 \begin{itemize}
     \item \textbf{Allocation/Libération :} Toutes les fonctions arithmétiques utilisent des variables temporaires initialisées via \texttt{mpz\_inits} et systématiquement libérées avec \texttt{mpz\_clears} pour prévenir les fuites de mémoire.
-    \item \textbf{Reproductibilité :} Les benchmarks de performance (dans \texttt{main.c}) utilisent un générateur aléatoire \texttt{gmp\_randstate\_t} initialisé avec l'entropie système (\texttt{time(NULL)}), assurant que les tests couvrent un espace de scalaires varié et réaliste.
+    \item \textbf{Reproductibilité :} Les benchmarks de performance (dans \texttt{glv_acceleration.c}) utilisent un générateur aléatoire \texttt{gmp\_randstate\_t} initialisé avec l'entropie système (\texttt{time(NULL)}), assurant que les tests couvrent un espace de scalaires varié et réaliste.
 \end{itemize}
 
 \subsection{Rôle des scripts de pré-calcul (SageMath)}
@@ -595,7 +614,7 @@ Cette réduction de 50\% des opérations arithmétiques implique un facteur d'ac
 \section{Résultats Expérimentaux}
 
 \subsection{Protocole de Test}
-Les mesures ont été réalisées via le fichier \texttt{main.c} sur une machine standard. Le protocole est le suivant :
+Les mesures ont été réalisées via le fichier \texttt{glv\_acceleration.c} sur une machine standard. Le protocole est le suivant :
 \begin{itemize}
     \item \textbf{Échantillon :} 1000 multiplications scalaires par série de test.
     \item \textbf{Scalaires :} Générés aléatoirement (\texttt{mpz\_urandomm}) sur 256 bits à chaque itération.
@@ -610,21 +629,35 @@ Nous avons effectué quatre campagnes de tests consécutives. Les résultats son
 \centering
 \caption{Benchmarks : Temps pour 1000 multiplications (sec)}
 \vspace{0.3cm}
-\begin{tabular}{@{}cccc@{}}
+\begin{tabular}{@{}ccccc@{}}
 \toprule
-\textbf{Essai} & \textbf{Classique (s)} & \textbf{GLV (s)} & \textbf{Gain (Speedup)} \\ \midrule
-Test 1 & 0.016444 & 0.009070 & \textbf{1.81 x} \\
-Test 2 & 0.016345 & 0.009838 & \textbf{1.66 x} \\
-Test 3 & 0.016428 & 0.009646 & \textbf{1.70 x} \\
-Test 4 & 0.017796 & 0.010455 & \textbf{1.70 x} \\ \midrule
-\textbf{Moyenne} & \textbf{0.016753} & \textbf{0.009752} & \textbf{1.72 x} \\ \bottomrule
+ \textbf{Taille de fenetrage ($w$)} & \textbf{Type} &  \textbf{Classique (s)} & \textbf{GLV (s)} & \textbf{Gain (Speedup)} \\ \midrule
+ 1 & 1 & 0.467192 & 0.296538 & \textbf{1.58 x} \\
+ 1 & 2 & 0.511694 & 0.321901 & \textbf{1.59 x} \\
+ 1 & 3 & 0.529827 & 0.325675 & \textbf{1.63 x} \\
+ \midrule
+ 2 & 1 & 0.485404 & 0.275656 & \textbf{1.76 x} \\
+ 2 & 2 & 0.496635 & 0.282760 & \textbf{1.76 x} \\
+ 2 & 3 & 0.525960 & 0.297335 & \textbf{1.77 x} \\
+ \midrule
+ 3 & 1 & 0.457346 & 0.324382 & \textbf{1.41 x} \\
+ 3 & 2 & 0.488046 & 0.339406 & \textbf{1.44 x} \\
+ 3 & 3 & 0.540056 & 0.364112 & \textbf{1.48 x} \\
+ \midrule
+ 4 & 1 & 0.496288 & 0.747927 & \textbf{0.66 x} \\
+ 4 & 2 & 0.500335 & 0.706349 & \textbf{0.71 x} \\
+ 4 & 3 & 0.542002 & 0.728592 & \textbf{0.74 x} \\
+ 
+\bottomrule
 \end{tabular}
 \end{table}
 
-Nous observons une accélération moyenne stable de \textbf{1.72x}, ce qui signifie que la méthode GLV est 72\% plus rapide que la méthode standard.
+Nous observons une accélération moyenne stable entre les différents types, la vraie différence vient du choix de $w$. Le temps de précalcul en $\mathcal{O}(2^{2w})$, car on doit calculer naïvement $iP+jQ$, pour $0\leq i,j<2^w$. Ce temps de précalcul explose donc rapidement, ce qui explique pour le gain maximal est atteint pour $w=2$, et que pour $w>4$, la méthode GLV est plus lente que l'exponentiation rapide. Nous avons d'ailleurs mis un failsafe dans la fonction \texttt{ec\_double\_scalar\_multiplication}.
+
+Le speedup maximal atteint est $\approx1.76$, ce qui signifie que la méthode GLV est 72\% plus rapide que l'exponentiation rapide. 
 
 \subsection{Interprétation de la Performance}
-Le gain mesuré (1.72x) est excellent, bien que légèrement inférieur au facteur théorique (2.0x). Cette différence s'explique par les coûts fixes inhérents à notre architecture logicielle, visibles dans \texttt{EC\_GLV.c} :
+Le gain mesuré (1.76x) est excellent, bien que légèrement inférieur au facteur théorique (2.0x). Cette différence s'explique par les coûts fixes inhérents à notre architecture logicielle, visibles dans \texttt{EC\_GLV.c} :
 
 \begin{enumerate}
     \item \textbf{Coût de conversion de coordonnées :} Pour appliquer l'endomorphisme $\phi(x,y) = (\beta x, y)$, nous convertissons le point P de projectif vers affine. Cette opération (\texttt{proj\_to\_affine}) implique une \textbf{inversion modulaire} (\texttt{mpz\_invert}), qui est une opération très coûteuse.
@@ -638,9 +671,9 @@ Malgré ces overheads, le gain reste massif, validant l'efficacité de la réduc
 
 Ce projet a permis d'explorer et d'implémenter la méthode de Gallant-Lambert-Vanstone (GLV) sur une courbe elliptique de type secp256k1 et sur d'autres types de courbes plus ou moins complexes. En structurant le code en couches modulaires, nous avons pu isoler la complexité mathématique (réduction de réseau, endomorphismes) pour nous concentrer sur l'optimisation du moteur arithmétique.
 
-Les résultats expérimentaux sont particulièrement satisfaisants :
+Les résultats expérimentaux sont très satisfaisants :
 \begin{itemize}
-    \item Nous avons mesuré une accélération moyenne de \textbf{1.72x} (gain de 72\%) par rapport à la méthode classique.
+    \item Nous avons mesuré une accélération moyenne de \textbf{1.76x} (gain de 76\%) par rapport à la méthode classique.
     \item Ce résultat dépasse les estimations prudentes des auteurs originaux (Gallant, Lambert, Vanstone, 2001) qui annonçaient une accélération d'environ 50\% (\textit{"roughly 50\% faster"}, soit un facteur 1.5x).
 \end{itemize}
 

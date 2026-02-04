@@ -1,17 +1,26 @@
 #include "short_vectors.h"
 
+/*
+ * Initialisation d'un vecteur Z2.
+ */
 void z2_init(Z2 *v)
 {
     mpz_init(v->x);
     mpz_init(v->y);
 }
 
+/*
+ * Libération d'un vecteur Z2.
+ */
 void z2_clear(Z2 *v)
 {
     mpz_clear(v->x);
     mpz_clear(v->y);
 }
 
+/*
+ * Calcule une base courte (v1, v2) pour la décomposition GLV.
+ */
 void glv_basis(Z2 *v1, Z2 *v2, const mpz_t n, const mpz_t lambda)
 {
     mpz_t r0, r1, r2;

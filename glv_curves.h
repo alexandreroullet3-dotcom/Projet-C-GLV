@@ -1,11 +1,13 @@
 #ifndef GLV_CURVES_H
 #define GLV_CURVES_H
 
-#include "quadratic_solver.h"
-#include "glv_decompose.h"
 #include "EC_square_and_multiply_proj.h"
+#include "glv_decompose.h"
+#include "quadratic_solver.h"
 
-// Structure pour une courbe GLV
+/*
+ * Structure pour une courbe GLV.
+ */
 typedef struct {
     ECCurve E;
     ECPointProj P;
@@ -17,7 +19,9 @@ typedef struct {
     Z2 v2;
 } GLVCurve;
 
-// Déclaration de fonctions d'initialisation
+/*
+ * Fonctions d'initialisation/clear.
+ */
 void init_secp256k1_curve(GLVCurve *curve);
 void init_example2_curve(GLVCurve *curve);
 void init_example3_curve(GLVCurve *curve);
