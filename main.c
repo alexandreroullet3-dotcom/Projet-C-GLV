@@ -57,24 +57,68 @@ int main() {
     mpz_set(E.a, C.E.a);
     mpz_set(E.b, C.E.b);
     mpz_set(E.p, C.E.p);
+    mpz_set(E.a2, C.E.a2);
     mpz_init_set(p, E.p);
     ec_point_proj_copy(&P, &C.P);
     ec_point_proj_copy(&phiP, &C.phiP);
 
+    // ==========================================
+    //      BLOC DE DIAGNOSTIC DE SÉCURITÉ
+    // ==========================================
+    printf("\n--- Vérification de la cohérence GLV ---\n");
+    
+    ECPointProj test_phi; // <--- C'est cette ligne qui manquait !
+    ec_point_proj_init(&test_phi);
+    
+    // Test 1 : Est-ce que phi(P) == [lambda]P ?
+    ec_scalar_mul_proj(&test_phi, &P, lambda, &E);
+    
+    if (ec_cmp_proj(&test_phi, &phiP, &E) == 0) {
+        printf("[OK] : phi(P) == [lambda]P. L'endomorphisme est parfait.\n");
+    } else {
+        // Test 2 : Est-ce que phi(P) == [1 - lambda]P ?
+        mpz_t other_lambda;
+        mpz_init_set_ui(other_lambda, 1);
+        mpz_sub(other_lambda, other_lambda, lambda);
+        mpz_mod(other_lambda, other_lambda, n);
+        
+        ec_scalar_mul_proj(&test_phi, &P, other_lambda, &E);
+        
+        if (ec_cmp_proj(&test_phi, &phiP, &E) == 0) {
+            printf("[ALERTE] : phi(P) == [1 - lambda]P.\n");
+            printf("-> Action : Remplace lambda par (1 - lambda) mod n dans glv_curves.c\n");
+        } else {
+            // Test 3 : Est-ce que phi(P) == [-lambda]P ?
+            ec_point_proj_neg(&test_phi, &test_phi); // On ne fait que tester le signe
+            ec_scalar_mul_proj(&test_phi, &P, lambda, &E);
+            ec_point_proj_neg(&test_phi, &test_phi);
+            
+            if (ec_cmp_proj(&test_phi, &phiP, &E) == 0) {
+                printf("[ALERTE] : phi(P) == [-lambda]P.\n");
+                printf("-> Action : Verifie le signe de l'ordonnee dans ton endomorphisme.\n");
+            } else {
+                printf("[ERREUR CRITIQUE] : phi(P) ne correspond a rien.\n");
+                printf("-> Action : Verifie a2 dans EC_add_proj.c et ta formule de phi3.\n");
+            }
+        }
+        mpz_clear(other_lambda);
+    }
+    ec_point_proj_clear(&test_phi);
+    printf("----------------------------------------\n\n");
+
     //ec_scalar_mul_proj(&R_classic, &P, n, &E);
     //gmp_printf("nP=(%Zx, %Zx, %Zx)\n", R_classic.X, R_classic.Y, R_classic.Z);
     //printf("%d\n", R_classic.infinity);
-
-
+    
     printf("Entrez un nombre :\n");
-    printf("1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n");
+    printf("1 pour utiliser GLV sur 10000 entiers aléatoires et constater l'accélération\n");
     printf("2 pour utiliser GLV sur un exemple spécifique\n");
     int option;
     scanf("%d", &option);
 
     if (option == 1){
     // ---------- 2. Boucle de tests ----------
-    const int N_TESTS = 1000;
+    const int N_TESTS = 10000;
     mpz_t k;
     mpz_init(k);
 
