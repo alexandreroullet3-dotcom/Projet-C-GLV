@@ -66,12 +66,28 @@ void init_example3_curve(GLVCurve *curve){
     mpz_inits(curve->E.a, curve->E.b, curve->E.p,
               curve->n, curve->lambda, curve->beta,
               curve->E.a2, NULL);
+    mpz_set_str(curve->E.p, "c1da32bc97dae988c398d3d419ce5210634811ec6bd31474803febcf727f2129", 16);
+    mpz_set_str(curve->n, "c1da32bc97dae988c398d3d419ce5211028b5b2bf6a01e44aa7fa1a81f9a90c4", 16);
+
+    /*mpz_t t;
+    mpz_init_set_si(t, -16);
+    mpz_invert(t, t, curve->E.p);
+    mpz_mul_ui(t, t, 35);
+    mpz_mod(t, t, curve->E.p);
+    mpz_set(curve->E.a, t);
+    mpz_set_si(t, -64);
+    mpz_invert(t, t, curve->E.p);
+    mpz_mul_ui(t, t, 49);
+    mpz_mod(t, t, curve->E.p);
+    mpz_set(curve->E.b, t);*/
+    
+
+
+    
     mpz_t t;
     mpz_init_set_ui(t, 4);
     mpz_set_si(curve->E.a, -2);
     mpz_set_si(curve->E.b, -1);
-    mpz_set_str(curve->E.p, "e6adac14aa1890c61edfaeb1f66359f6468e064f93ce403cfb73b9e3cb7f44ad", 16);
-    mpz_set_str(curve->n, "e6adac14aa1890c61edfaeb1f66359f59c5613554c28c9ab168f0b1f3c52fca4", 16);
     mpz_invert(curve->E.a2, t, curve->E.p);
     mpz_mul_ui(curve->E.a2, curve->E.a2, 3);
     mpz_neg(curve->E.a2, curve->E.a2);
@@ -79,16 +95,17 @@ void init_example3_curve(GLVCurve *curve){
     // Point générateur
     ec_point_proj_init(&curve->P);
     ec_point_proj_init(&curve->phiP);
-    mpz_set_str(curve->P.X, "2958133073b80f31070226c37e132acccafc05892f2fd67faa556b8c5dacd8d", 16);
-    mpz_set_str(curve->P.Y, "a92358ec0c20bdaf22e615ab89169b0158e4912b6e2c107b43c169cf773716bf", 16);
+    mpz_set_str(curve->P.X, "46d91a4b0d3f776d93bbac95a9754fa097cc72296faa177698d7f78d968c9399", 16);
+    mpz_set_str(curve->P.Y, "7b817bd75ab53007dd2e82ce2a8f792204df0bd46995d5d31c355fb86d515431", 16);
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
+    mpz_clear(t);
 
     // GLV paramètres
     trouver_constantes_glv(curve->beta, &curve->E, 3);
 
     // lambda 
-    mpz_set_str(curve->lambda, "cec272884084085b2e7c660e7e5a27cc0d98b9741cba044bf0f30f059e31320a", 16);
+    mpz_set_str(curve->lambda, "0x81c1ea47be450c44006169334b5c00996fca8415616e952dbca4e83b126568aa", 16);
     ec_scalar_mul_proj(&curve->phiP, &curve->P, curve->lambda, &curve->E);
     
     // Base du réseau GLV

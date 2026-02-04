@@ -120,7 +120,6 @@ void solve_quadratic_equation(mpz_t r1, mpz_t r2, mpz_t A, mpz_t B, const mpz_t 
         gmp_printf("A = %Zd, B = %Zd, m = %Zx\n", A, B, m);
         exit(1);
     }
-
     // Calcul de : (-A ± sqrt) / 2
     mpz_set_ui(inv_2, 2);
     mpz_invert(inv_2, inv_2, m); 

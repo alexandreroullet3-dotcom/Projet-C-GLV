@@ -61,14 +61,15 @@ int main() {
     ec_point_proj_copy(&P, &C.P);
     ec_point_proj_copy(&phiP, &C.phiP);
 
-    //ec_scalar_mul_proj(&R_classic, &P, n, &E);
-    //gmp_printf("nP=(%Zx, %Zx, %Zx)\n", R_classic.X, R_classic.Y, R_classic.Z);
-    //printf("%d\n", R_classic.infinity);
+    ec_scalar_mul_proj(&R_classic, &P, n, &E);
+    gmp_printf("nP=(%Zx, %Zx, %Zx)\n", R_classic.X, R_classic.Y, R_classic.Z);
+    printf("%d\n", R_classic.infinity);
 
 
     printf("Entrez un nombre :\n");
     printf("1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n");
     printf("2 pour utiliser GLV sur un exemple spécifique\n");
+    printf("3 pour une génération de clé Diffie-Hellmann\n");
     int option;
     scanf("%d", &option);
 
@@ -156,6 +157,29 @@ int main() {
         proj_to_affine(&Raff, &R_glv, &E);
         gmp_printf("k*P = (%Zx, %Zx)\n", Raff.x, Raff.y);
     }
+    }
+
+    if (option == 3){
+    mpz_t k;
+    mpz_init(k);
+    srand(time(NULL));
+    gmp_randstate_t state;
+    gmp_randinit_default(state); // Initialise le générateur par défaut
+
+    // On peut le "seeder" avec le temps ou un autre nombre aléatoire
+    unsigned long seed = time(NULL);
+    gmp_randseed_ui(state, seed);
+    // k aléatoire modulo n
+    mpz_urandomm(k, state, n);
+    ec_scal_mul_glv(&R_glv, &P, &phiP, k, &E, &v1, &v2);
+    ECPointAffine Raff;
+    ec_point_affine_init(&Raff);
+    proj_to_affine(&Raff, &R_glv, &E);
+    
+    gmp_printf("Votre clé publique est :\n(%Zx, %Zx)\nVotre clé privé est :\n%Zx\n", Raff.x, Raff.y, k);
+    ec_point_affine_clear(&Raff);
+    gmp_randclear(state);
+    mpz_clear(k);
     }
 
     // ---------- 4. Nettoyage ----------
