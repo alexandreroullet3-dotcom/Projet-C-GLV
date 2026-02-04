@@ -143,33 +143,57 @@ void solve_quadratic_equation(mpz_t r1, mpz_t r2, mpz_t A, mpz_t B, const mpz_t 
 // prend en entrée la courbe E, et le type (1, 2 ou 3)
 // cette focntion est a modifier si on rajoute des exemples, car si c'est aucun de c'est trois type,   
 // il faut toruver l'équation caracteristique, mais pour cela on doit la connaitre aux préalable
-void trouver_constantes_glv(mpz_t beta, const ECCurve *E,
-                            int type) {
-    mpz_t A, B, b1, b2, l1, l2;
-    mpz_inits(A, B, b1, b2, l1, l2, NULL);
+// Nouvelle signature : on passe P et lambda pour vérifier la correspondance
+void trouver_constantes_glv(mpz_t beta, const ECCurve *E, const ECPointProj *P, const mpz_t lambda, int type) {
+    mpz_t A, B, b1, b2;
+    mpz_inits(A, B, b1, b2, NULL);
 
-    // Définissons l'équation , donc les varibale A et B
-    if (type == 1) {       // x^2 + x + 1 = 0
+    // 1. Définition de l'équation caractéristique selon le type [cite: 56, 62, 98]
+    if (type == 1) {        // y^2 = x^3 + b : x^2 + x + 1 = 0 [cite: 59, 62]
         mpz_set_ui(A, 1); 
         mpz_set_ui(B, 1);
-    } else if (type == 2) { // x^2 + 1 = 0
+    } else if (type == 2) { // y^2 = x^3 + ax : x^2 + 1 = 0 [cite: 54, 56]
         mpz_set_ui(A, 0);
         mpz_set_ui(B, 1);
-    } else if (type == 3) { // x^2 - x + 2 = 0
-        // Pour type 3, A = -1 mod p
-        mpz_sub_ui(A, E->p, 1);
+    } else if (type == 3) { // y^2 = x^3 - 3/4x^2 - 2x - 1 : x^2 - x + 2 = 0 [cite: 65, 74, 98]
+        mpz_sub_ui(A, E->p, 1); // A = -1 mod p
         mpz_set_ui(B, 2);
     }
 
-    // Calculer Beta Modulo p
+    // 2. Calcul des deux racines possibles pour beta mod p
     solve_quadratic_equation(b1, b2, A, B, E->p);
-    
-    // On choisit arbitrairement la première solution pour Beta
-    mpz_set(beta, b1); 
 
+    // 3. VÉRIFICATION : On teste laquelle des deux racines correspond à lambda
+    ECPointProj R_test, phiP_test;
+    ec_point_proj_init(&R_test);
+    ec_point_proj_init(&phiP_test);
+
+    // On calcule R = [lambda]P de manière classique [cite: 10]
+    ec_scalar_mul_proj(&R_test, P, lambda, E);
+
+    // On teste b1 avec l'endomorphisme
+    ECPointAffine P_aff, phiP_aff;
+    ec_point_affine_init(&P_aff);
+    ec_point_affine_init(&phiP_aff);
+    proj_to_affine(&P_aff, P, E);
+
+    if (type == 1) ec_endo_phi1_affine(&phiP_aff, &P_aff, E, b1);
+    else if (type == 2) ec_endo_phi2_affine(&phiP_aff, &P_aff, E, b1);
+    else if (type == 3) ec_endo_phi3_affine(&phiP_aff, &P_aff, E, b1);
+
+    affine_to_proj(&phiP_test, &phiP_aff);
+
+    // Si phi_b1(P) == [lambda]P, alors beta = b1. Sinon, beta = b2.
+    if (ec_cmp_proj(&phiP_test, &R_test, E) == 0) {
+        mpz_set(beta, b1);
+    } else {
+        mpz_set(beta, b2);
+    }
 
     // Nettoyage
-    mpz_clears(A, B, b1, b2, l1, l2, NULL);
-} 
-
-
+    ec_point_proj_clear(&R_test);
+    ec_point_proj_clear(&phiP_test);
+    ec_point_affine_clear(&P_aff);
+    ec_point_affine_clear(&phiP_aff);
+    mpz_clears(A, B, b1, b2, NULL);
+}

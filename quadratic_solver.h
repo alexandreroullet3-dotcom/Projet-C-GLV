@@ -1,6 +1,7 @@
 #ifndef QUADRA_SOLVER
 #define QUADRA_SOLVER
 #include "EC_struct.h"
+#include "EC_square_and_multiply_proj.h"
 #include "EC_endo_phi_GLV.h"
 
 // Calcule r tel que r^2 = n mod p
@@ -16,8 +17,7 @@ void solve_quadratic_equation(mpz_t r1, mpz_t r2, mpz_t A, mpz_t B, const mpz_t 
 // prend en entrée la courbe E, et le type (1, 2 ou 3)
 // cette focntion est a modifier si on rajoute des exemples, car si c'est aucun de c'est trois type,   
 // il faut toruver l'équation caracteristique, mais pour cela on doit la connaitre aux préalable
-void trouver_constantes_glv(mpz_t beta, const ECCurve *E,
-                            int type);
+void trouver_constantes_glv(mpz_t beta, const ECCurve *E, const ECPointProj *P, const mpz_t lambda, int type);
 
 
 //Fonction utilisée dans le cas 3 pour calculer omega = (1+sqrt(-7))/2
