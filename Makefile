@@ -2,9 +2,12 @@ NAME    := glv
 
 CC      := gcc
 
-CFLAGS  := -Wall -Wextra -Werror -std=c11
-DEBUG_FLAGS := -g3 -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
+BASE_CFLAGS := -Wall -Wextra -Werror -std=c11
+DEBUG_FLAGS := -g3 -O0 -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 
+
+CFLAGS  := $(BASE_CFLAGS)
+LDFLAGS :=
 INCLUDES:= -I.
 LIBS    := -lgmp
 
@@ -31,14 +34,16 @@ OBJS := $(SRCS:.c=.o)
 
 all: $(NAME)
 
-# release build
+# ---------- RELEASE ----------
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LIBS)
+	$(CC) $(OBJS) -o $(NAME) $(LDFLAGS) $(LIBS)
 
-# debug build avec sanitizer
+# ---------- DEBUG ----------
 debug: CFLAGS += $(DEBUG_FLAGS)
+debug: LDFLAGS += -fsanitize=address,undefined
 debug: re
 
+# ---------- RULES ----------
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 

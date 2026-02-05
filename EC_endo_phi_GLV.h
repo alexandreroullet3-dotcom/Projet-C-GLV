@@ -1,8 +1,7 @@
 #ifndef EC_ENDO_PHI_GLV_H
 #define EC_ENDO_PHI_GLV_H
 
-#include "EC_square_and_multiply_affine.h"
-
+#include "EC_struct.h"
 /*
  * Endomorphismes GLV pour différents types de courbes.
  */

@@ -30,7 +30,7 @@ int mpz_tonelli_shanks(mpz_t r, const mpz_t n, const mpz_t p)
         mpz_add_ui(e, p, 1);
         mpz_fdiv_q_2exp(e, e, 2);  // (p+1)/4
         mpz_powm(r, n, e, p);
-        mpz_clear(e);
+        mpz_clears(e, tmp, NULL);
         return 1;
     }
 

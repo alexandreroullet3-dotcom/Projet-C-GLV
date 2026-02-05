@@ -1,7 +1,6 @@
 #ifndef QUADRATIC_SOLVER_H
 #define QUADRATIC_SOLVER_H
 
-#include "EC_struct.h"
 #include "EC_square_and_multiply_proj.h"
 #include "EC_endo_phi_GLV.h"
 

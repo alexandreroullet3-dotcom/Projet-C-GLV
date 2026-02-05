@@ -54,7 +54,7 @@ void calculer_phiP_optimise(GLVCurve *curve, int type)
  */
 void init_secp256k1_curve(GLVCurve *curve)
 {
-    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, NULL);
+    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, curve->E.a2, NULL);
     mpz_set_ui(curve->E.a, 0);
     mpz_set_ui(curve->E.b, 7);
     mpz_set_str(curve->E.p, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16);
@@ -83,7 +83,7 @@ void init_secp256k1_curve(GLVCurve *curve)
  */
 void init_example2_curve(GLVCurve *curve)
 {
-    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, NULL);
+    mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, curve->E.a2, NULL);
     mpz_set_str(curve->E.a, "2e818c97303c2c8e6ee49e2b6cacc754eff27e8346e4a23da9b7b882685b7c72", 16);
     mpz_set_ui(curve->E.b, 0);
     mpz_set_str(curve->E.p, "b4fc23d83418e4d099141c1a435cbb663817e03477f8f84f3afd51e63e89ef31", 16);
@@ -161,8 +161,7 @@ void init_example3_curve(GLVCurve *curve)
 }
 
 void clear_curve(GLVCurve *curve)
-{
-    mpz_clears(curve->beta, curve->lambda, curve->n, NULL);
+{   mpz_clears(curve->beta, curve->lambda, curve->n, NULL); 
     ec_curve_clear(&curve->E);
     ec_point_proj_clear(&curve->P);
     ec_point_proj_clear(&curve->phiP);

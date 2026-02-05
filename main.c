@@ -1,17 +1,9 @@
 #include <stdio.h>
 
-#include "EC_square_and_multiply_proj.h"
-#include "glv_curves.h"
 #include "glv_acceleration.h"
 #include "EC_DH.h"
 #include "EC_GLV_demo.h"
 
-enum {
-    kCurveMinChoice = 1,
-    kCurveMaxChoice = 3,
-    kActionMinChoice = 1,
-    kActionMaxChoice = 3
-};
 
 static int read_choice(const char *prompt, int min_choice, int max_choice) {
     int choice = 0;
@@ -51,7 +43,7 @@ int main() {
         "2 pour faire GLV sur une équation de la forme y^2 = x^3 + a*x avec a un entier "
         "aléatoire mod p\n"
         "3 pour faire GLV sur une équation de la forme y^2 = x^3 - 3/4*x^2 - 2*x - 1\n";
-    int type = read_choice(curve_prompt, kCurveMinChoice, kCurveMaxChoice);
+    int type = read_choice(curve_prompt, 1, 3);
 
     // ======================== TEST de la fonction GLV ========================
     GLVCurve C;
@@ -63,9 +55,9 @@ int main() {
     const char *action_prompt =
         "Entrez un nombre :\n"
         "1 pour utiliser GLV sur 1000 entiers aléatoires et constater l'accélération\n"
-        "2 pour utiliser GLV sur un exemple spécifique\n"
-        "3 pour une génération de clé Diffie-Hellmann\n";
-    int option = read_choice(action_prompt, kActionMinChoice, kActionMaxChoice);
+        "2 pour une génération de clé Diffie-Hellmann\n"
+        "3 pour utiliser GLV sur un exemple spécifique\n";
+    int option = read_choice(action_prompt, 1, 3);
 
     switch (option) {
         case 1:
@@ -73,10 +65,10 @@ int main() {
             glv_acceleration(&C, N_tests);
             break;
         case 2:
-            EC_GLV_demo(&C);
+            ec_dh(&C);
             break;
         case 3:
-            ec_dh(&C);
+            EC_GLV_demo(&C);
             break;
         default:
             break;

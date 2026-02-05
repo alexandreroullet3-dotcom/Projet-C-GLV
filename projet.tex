@@ -31,6 +31,8 @@
 \usepackage{array}
 \usepackage{float}
 \usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
 
 % --- Code et Algorithmes ---
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
@@ -513,6 +515,100 @@ $\downarrow$
 
 \caption{Organisation hiérarchique détaillée des fichiers sources}
 \end{figure}
+
+\newpage
+
+
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+    box/.style={
+        draw,
+        rectangle,
+        rounded corners,
+        minimum width=3.4cm,
+        minimum height=0.9cm,
+        align=center,
+        font=\small
+    },
+    >=Latex,
+    node distance=1.4cm and 1.6cm
+]
+
+% Top
+\node[box] (gmp) {\texttt{gmp.h}};
+
+% Level 1
+\node[box, below=of gmp] (struct) {\texttt{EC\_struct.h}};
+
+% Level 2
+\node[box, left=of struct] (addproj) {\texttt{EC\_add\_proj.h}};
+\node[box, below=of struct] (precomp) {\texttt{precompute\_table.h}};
+\node[box, below right=of struct] (shortv) {\texttt{short\_vectors.h}};
+\node[box, right=3.8cm of struct] (affine) {\texttt{EC\_add\_affine.h}};
+\node[box, right =of shortv] (sqaff) {\texttt{EC\_square\_and\_multiply\_affine.h}};
+
+% Level 3
+\node[box, below left=of addproj] (sqproj) {\texttt{EC\_square\_and\_multiply\_proj.h}};
+\node[box, below=of precomp] (double) {\texttt{double\_scalar\_multiplication.h}};
+\node[box, right =of double] (gldecomp) {\texttt{glv\_decompose.h}};
+\node[box, left=of double] (endo) {\texttt{EC\_endo\_phi\_GLV.h}};
+
+% Level 4
+\node[box, left=of endo] (quad) {\texttt{quadratic\_solver.h}};
+\node[box, below =of endo] (glvcurves) {\texttt{glv\_curves.h}};
+\node[box, below=of double] (ecglv) {\texttt{EC\_glv.h}};
+
+% Bottom
+\node[box, below left=of glvcurves] (accel) {\texttt{glv\_acceleration.h}};
+\node[box, right = 4.8cm of accel] (dh) {\texttt{EC\_DH.h}};
+\node[box, right = 4.8cm of dh] (demo) {\texttt{EC\_GLV\_demo.h}};
+\node[box, below=of dh] (main) {\texttt{main.c}};
+
+% Connections
+\draw[->] (gmp) -- (struct);
+
+\draw[->] (struct) -- (addproj);
+\draw[->] (struct) -- (precomp);
+\draw[->] (struct) -- (shortv);
+\draw[->] (struct) -- (affine);
+\draw[->] (struct) -- (endo);
+
+\draw[->] (affine) -- (sqaff);
+
+\draw[->] (addproj) -- (sqproj);
+\draw[->] (addproj) -- (double);
+\draw[->] (precomp) -- (double);
+\draw[->] (shortv) -- (gldecomp);
+
+\draw[->] (gldecomp) -- (glvcurves)
+\draw[->] (gldecomp) -- (ecglv)
+
+\draw[->] (endo) -- (ecglv);
+\draw[->] (endo) -- (quad);
+\draw[->] (double) -- (ecglv);
+
+\draw[->] (sqproj) -- (quad);
+\draw[->] (quad) -- (glvcurves);
+
+\draw[->] (glvcurves) -- (accel);
+\draw[->] (glvcurves) -- (dh);
+\draw[->] (glvcurves) -- (demo);
+\draw[->] (ecglv) -- (dh);
+\draw[->] (ecglv) -- (demo);
+\draw[->] (ecglv) -- (accel);
+
+\draw[->] (dh) -- (main);
+\draw[->] (accel) -- (main);
+\draw[->] (demo) -- (main);
+
+\end{tikzpicture};
+}
+\caption{Dépendances des fichiers du projet}
+\end{figure}
+
 
 \section{Optimisations Algorithmiques Implémentées}
 

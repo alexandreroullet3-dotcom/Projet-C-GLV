@@ -1,7 +1,6 @@
 #ifndef GLV_CURVES_H
 #define GLV_CURVES_H
 
-#include "EC_square_and_multiply_proj.h"
 #include "glv_decompose.h"
 #include "quadratic_solver.h"
 
