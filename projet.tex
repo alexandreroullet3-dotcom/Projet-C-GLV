@@ -138,7 +138,7 @@
     \begin{minipage}{0.9\textwidth}
     \hrulefill \\
     \textbf{Résumé} \\
-    Ce rapport synthétise les travaux de recherche et de développement visant à optimiser la multiplication scalaire sur les courbes elliptiques via la méthode Gallant-Lambert-Vanstone (GLV). Nous analysons en profondeur quatre familles de courbes, allant des cas classiques ($j=0$ ou $j=1728$) aux cas complexes impliquant des endomorphismes rationnels (avec $D=7$ ou $8$). Nous détaillons la théorie de la réduction de réseau (Euclide Étendu, Babai) ainsi que l'optimisation par la méthode d'entrelacement de Shamir avec fenêtrage (Windowing). L'implémentation complète en C/GMP démontre une accélération de \textbf{72\,\%} par rapport aux standards actuels. \\
+    Ce rapport synthétise les travaux de recherche et de développement visant à optimiser la multiplication scalaire sur les courbes elliptiques via la méthode Gallant-Lambert-Vanstone (GLV). Nous analysons en profondeur quatre familles de courbes, allant des cas classiques ($j=0$ ou $j=1728$) aux cas complexes impliquant des endomorphismes rationnels (avec $D=7$ ou $8$). Nous détaillons la théorie de la réduction de réseau (Euclide Étendu, Babai) ainsi que l'optimisation par la méthode d'entrelacement de Shamir avec fenêtrage (Windowing). L'implémentation complète en C/GMP démontre une accélération de \textbf{76\,\%} par rapport à la méthode naïve. \\
     \hrulefill
     \end{minipage}
     \end{center}
@@ -151,6 +151,7 @@
 
 % --- Table des matières ---
 \tableofcontents
+
 \newpage
 
 % ============================================================
@@ -416,16 +417,73 @@ $v_2 \gets (r_{m-1}, -t_{m-1})$\;
 \end{algorithm}
 Cette base est calculée une seule fois lors de l'initialisation des paramètres de la courbe.
 
+\subsection{Justification de la terminaison}
+
+À chaque itération de l'algorithme, les restes satisfont :
+\[
+r_{i+1} = r_{i-1} - q_i r_i, \quad 0 \le r_{i+1} < r_i.
+\]
+
+Ainsi, la suite \((r_i)_{i\ge0}\) est strictement décroissante et composée de nombres entiers non négatifs.  
+
+\textbf{Observation importante :} si $\gcd(n, \lambda) = d$, alors le dernier reste non nul de l'EEA vaut $d$. Dans la pratique GLV, on a toujours $\gcd(n, \lambda) = 1$, et la suite peut donc toujours descendre jusqu'à un reste $r_m < \sqrt{n}$.  
+
+Par conséquent, la boucle `while` terminera toujours.
+
+\subsection{Justification de la correction}
+
+\paragraph{1. Appartenance au réseau $\mathcal{L}$ :} 
+Par construction, la suite $(r_i, t_i)$ est issue de l'algorithme d'Euclide Étendu appliqué à $(n, \lambda)$, donc
+\[
+r_i = n s_i + \lambda t_i \quad \text{pour certains } s_i \in \mathbb{Z}.
+\]
+Ainsi
+\[
+r_i - t_i \lambda = n s_i \equiv 0 \pmod n \implies (r_i, -t_i) \in \mathcal{L}.
+\]
+
+\paragraph{2. Vecteurs courts :} 
+À chaque itération, on a $r_{i+1} = r_{i-1} - q_i r_i$ avec $0 \le r_{i+1} < r_i$. On s'arrête dès que $r_m < \sqrt{n}$.  
+
+- Pour le vecteur $v_1 = (r_m, -t_m)$, sa norme euclidienne est
+\[
+\|v_1\| = \sqrt{r_m^2 + t_m^2} \le \sqrt{r_m^2 + r_m^2} = r_m \sqrt{2} < \sqrt{2 n},
+\]
+car $|t_m| < r_m$ (propriété standard de l'EEA : les coefficients $t_i$ satisfont $|t_i| < r_{i-1}/r_i$).  
+
+- Pour le vecteur $v_2 = (r_{m-1}, -t_{m-1})$, on a $r_{m-1} > r_m$ mais $r_{m-1} < n$, donc la norme reste de l’ordre $O(\sqrt{n})$, même si l'argument heuristique.  
+
+Ainsi, les deux vecteurs sont courts pour la décomposition GLV.
+
+\paragraph{3. Indépendance linéaire :} Par construction de l'EEA, $(r_m, r_{m-1})$ et $(t_m, t_{m-1})$ satisfont le relation de Bézout
+\[
+r_{m-1} t_m - r_m t_{m-1} = \pm n \neq 0.
+\]  
+Ainsi le déterminant de la matrice
+\[
+\begin{pmatrix} r_m & r_{m-1} \\ -t_m & -t_{m-1} \end{pmatrix} 
+\]
+est non nul.  Les vecteurs sont donc linéairement indépendants sur $\mathbb{Z}$ et forment une base du réseau $\mathcal{L}$.
+
+\paragraph{Conclusion :} 
+L’algorithme produit deux vecteurs $(v_1, v_2)$ qui :
+\begin{itemize}
+    \item appartiennent à $\mathcal{L}$,
+    \item sont courts (norme $O(\sqrt{n})$),
+    \item et sont linéairement indépendants.
+\end{itemize}
+Ils forment donc une base réduite appropriée pour la méthode GLV.
+
 \section{Étape 2 : Décomposition de Babai (Rounding)}
 Pour un scalaire $k$ donné à l'exécution, nous résolvons le CVP (Closest Vector Problem) approximatif dans le plan.
 On cherche $v = c_1 v_1 + c_2 v_2 \approx (k, 0)$.
 
 \subsection{Algorithme}
-1. **Résolution dans $\mathbb{Q}$ :** On résout le système linéaire $(k, 0) = c_1 v_1 + c_2 v_2$. Grâce à la règle de Cramer :
+1. Résolution dans $\mathbb{Q}$ : On résout le système linéaire $(k, 0) = c_1 v_1 + c_2 v_2$. Grâce à la règle de Cramer :
 \[ c_1 = \frac{k \times v_{2,y}}{\det(v_1, v_2)}, \quad c_2 = \frac{k \times (-v_{1,y})}{\det(v_1, v_2)} \]
-2. **Arrondi :** On arrondit les coefficients rationnels à l'entier le plus proche :
+2. Arrondi : On arrondit les coefficients rationnels à l'entier le plus proche :
 \[ b_1 = \lfloor c_1 \rceil, \quad b_2 = \lfloor c_2 \rceil \]
-3. **Réduction :** Le vecteur court est obtenu par soustraction :
+3. Réduction : Le vecteur court est obtenu par soustraction :
 \[ (k_1, k_2) = (k, 0) - b_1 v_1 - b_2 v_2 \]
 
 \begin{theoreme}[Bornes de Babai]
@@ -444,79 +502,6 @@ L'implémentation de la méthode GLV a été réalisée en langage C, en s'appuy
 \section{Architecture Modulaire}
 
 Le projet est structuré selon une logique de couches, séparant l'arithmétique de bas niveau, la gestion algébrique des courbes et la logique de haut niveau propre à l'algorithme GLV. Cette modularité facilite la maintenance et les tests unitaires.
-
-\begin{figure}[H]
-\centering
-\textbf{Architecture du Projet en Couches}
-\vspace{0.3cm}
-
-% --- Couche 1 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{1. Interface et Benchmarks} \\
-    \small \textit{Point d'entrée, mesures de temps, tests, et générations de clés Diffie-Hellmann} \\
-    \texttt{main.c, gen\_const\_*.sage.py, glv\_acceleration.c, EC\_DH.c, EC\_GLV\_demo.c}}
-}
-
-% Jonction 1
-$\downarrow$
-
-% --- Couche 2 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{2. Logique de Contrôle GLV} \\
-    \small \textit{Orchestration, Décomposition (Babai) et Réduction} \\
-    \texttt{EC\_GLV.c, glv\_decompose.c, short\_vectors.c, glv\_curves.c}}
-}
-
-% Jonction 2
-$\downarrow$
-
-% --- Couche 3 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{3. Moteur de Multiplication} \\
-    \small \textit{Calcul simultané $kP + lQ$ (Shamir w-ary)} \\
-    \texttt{double\_scalar\_multiplication.c, precompute\_table.c}}
-}
-
-% Jonction 3
-$\downarrow$
-
-% --- Couche 4 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{4. Couche Algébrique} \\
-    \small \textit{Paramètres courbes \& Endomorphismes ($\phi$)} \\
-    \texttt{glv\_curves.c, EC\_endo\_phi\_GLV.c, quadratic\_solver.c}}
-}
-
-% Jonction 4
-$\downarrow$
-
-% --- Couche 5 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{5. Noyau Arithmétique (GMP)} \\
-    \small \textit{Opérations de base (Add/Double) Affines \& Projectives} \\
-    \texttt{EC\_add\_proj.c, EC\_square\_and\_multiply\_proj.c}}
-}
-
-% Jonction 5
-$\downarrow$
-
-% --- Couche 6 ---
-\fbox{
-    \parbox{12cm}{\centering
-    \textbf{6. Structures informatiques (courbes, points) (GMP)} \\
-    \small \textit{Allocations, désallocations, conversions entre affine \& projectif, tests d'égalités} \\
-    \texttt{EC\_struct.c}}
-}
-
-\caption{Organisation hiérarchique détaillée des fichiers sources}
-\end{figure}
-
-\newpage
 
 
 
@@ -609,6 +594,78 @@ $\downarrow$
 \caption{Dépendances des fichiers du projet}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\textbf{Architecture du Projet en Couches}
+\vspace{0.3cm}
+
+% --- Couche 1 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{1. Interface et Benchmarks} \\
+    \small \textit{Point d'entrée, mesures de temps, tests, et générations de clés Diffie-Hellmann} \\
+    \texttt{main.c, gen\_const\_*.sage.py, glv\_acceleration.c, EC\_DH.c, EC\_GLV\_demo.c}}
+}
+
+% Jonction 1
+$\downarrow$
+
+% --- Couche 2 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{2. Logique de Contrôle GLV} \\
+    \small \textit{Orchestration, Décomposition (Babai) et Réduction} \\
+    \texttt{EC\_GLV.c, glv\_decompose.c, short\_vectors.c, glv\_curves.c}}
+}
+
+% Jonction 2
+$\downarrow$
+
+% --- Couche 3 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{3. Moteur de Multiplication} \\
+    \small \textit{Calcul simultané $kP + lQ$ (Shamir w-ary)} \\
+    \texttt{double\_scalar\_multiplication.c, precompute\_table.c}}
+}
+
+% Jonction 3
+$\downarrow$
+
+% --- Couche 4 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{4. Couche Algébrique} \\
+    \small \textit{Paramètres courbes \& Endomorphismes ($\phi$)} \\
+    \texttt{glv\_curves.c, EC\_endo\_phi\_GLV.c, quadratic\_solver.c}}
+}
+
+% Jonction 4
+$\downarrow$
+
+% --- Couche 5 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{5. Noyau Arithmétique (GMP)} \\
+    \small \textit{Opérations de base (Add/Double) Affines \& Projectives} \\
+    \texttt{EC\_add\_proj.c, EC\_square\_and\_multiply\_proj.c}}
+}
+
+% Jonction 5
+$\downarrow$
+
+% --- Couche 6 ---
+\fbox{
+    \parbox{12cm}{\centering
+    \textbf{6. Structures informatiques (courbes, points) (GMP)} \\
+    \small \textit{Allocations, Désallocations, conversions Affines \& Projectives, Tests d'égalités} \\
+    \texttt{EC\_struct.c}}
+}
+
+\caption{Organisation hiérarchique détaillée des fichiers sources}
+\end{figure}
+
+
 
 \section{Optimisations Algorithmiques Implémentées}
 
@@ -633,7 +690,6 @@ L'algorithme calcule une approximation flottante de la solution dans la base du 
 \end{equation}
 Cette approche garantit une complexité constante $O(1)$, rendant l'étape de décomposition négligeable par rapport au gain obtenu sur la multiplication.
 
-\newpage
 
 \subsection{Multiplication Simultanée avec Fenêtrage (Interleaving w-ary)}
 L'optimisation la plus avancée du projet se trouve dans \texttt{double\_scalar\_multiplication.c}.
@@ -656,7 +712,7 @@ Cette opération étant quasi-instantanée (complexité équivalente à une mult
 L'utilisation de la bibliothèque GMP impose une gestion rigoureuse de la mémoire dynamique.
 \begin{itemize}
     \item \textbf{Allocation/Libération :} Toutes les fonctions arithmétiques utilisent des variables temporaires initialisées via \texttt{mpz\_inits} et systématiquement libérées avec \texttt{mpz\_clears} pour prévenir les fuites de mémoire.
-    \item \textbf{Reproductibilité :} Les benchmarks de performance (dans \texttt{glv_acceleration.c}) utilisent un générateur aléatoire \texttt{gmp\_randstate\_t} initialisé avec l'entropie système (\texttt{time(NULL)}), assurant que les tests couvrent un espace de scalaires varié et réaliste.
+    \item \textbf{Reproductibilité :} Les benchmarks de performance (dans \texttt{glv\_acceleration.c}) utilisent un générateur aléatoire \texttt{gmp\_randstate\_t} initialisé avec l'entropie système (\texttt{time(NULL)}), assurant que les tests couvrent un espace de scalaires varié et réaliste.
 \end{itemize}
 
 \subsection{Rôle des scripts de pré-calcul (SageMath)}
@@ -670,13 +726,14 @@ Les fichiers \texttt{gen\_const\_*.sage} agissent donc comme un oracle mathémat
 \end{itemize}
 Cette approche permet de décharger le programme principal de la complexité de l'initialisation pour se concentrer uniquement sur la performance de la multiplication scalaire.
 
-\subsection{Comparaison avec la JSF}
-Une alternative courante à la technique de \textit{Straus-Shamir} est la \textit{Joint Sparse Form} (JSF), qui recode les scalaires pour minimiser le nombre de colonnes non nulles. Bien que la JSF soit très efficace en mémoire (nécessitant peu de précalculs), notre approche par fenêtrage offre un compromis différent : elle utilise plus de mémoire pour stocker la table $T$, mais réduit le nombre d'opérations d'addition en traitant plusieurs bits à la fois, ce qui est particulièrement adapté aux architectures modernes disposant de cache suffisant.
+
+%%\subsection{Comparaison avec la JSF}
+%%Une alternative courante à la technique de \textit{Straus-Shamir} est la \textit{Joint Sparse Form} (JSF), qui recode les scalaires pour minimiser le nombre de colonnes non nulles. Bien que la JSF soit très efficace en mémoire (nécessitant peu de précalculs), notre approche par fenêtrage offre un compromis différent : elle utilise plus de mémoire pour stocker la table $T$, mais réduit le nombre d'opérations d'addition en traitant plusieurs bits à la fois, ce qui est particulièrement adapté aux architectures modernes disposant de cache suffisant.
 
 \newpage
 
 % ============================================================
-\chapter{Analyse des Résultats et Conclusion}
+\chapter{Analyse des Résultats}
 
 \section{Modèle de Performance Théorique}
 
@@ -750,7 +807,7 @@ Nous avons effectué quatre campagnes de tests consécutives. Les résultats son
 
 Nous observons une accélération moyenne stable entre les différents types, la vraie différence vient du choix de $w$. Le temps de précalcul en $\mathcal{O}(2^{2w})$, car on doit calculer naïvement $iP+jQ$, pour $0\leq i,j<2^w$. Ce temps de précalcul explose donc rapidement, ce qui explique pour le gain maximal est atteint pour $w=2$, et que pour $w>4$, la méthode GLV est plus lente que l'exponentiation rapide. Nous avons d'ailleurs mis un failsafe dans la fonction \texttt{ec\_double\_scalar\_multiplication}.
 
-Le speedup maximal atteint est $\approx1.76$, ce qui signifie que la méthode GLV est 72\% plus rapide que l'exponentiation rapide. 
+Le speedup maximal atteint est $\approx1.76$, ce qui signifie que la méthode GLV est 76\% plus rapide que l'exponentiation rapide. 
 
 \subsection{Interprétation de la Performance}
 Le gain mesuré (1.76x) est excellent, bien que légèrement inférieur au facteur théorique (2.0x). Cette différence s'explique par les coûts fixes inhérents à notre architecture logicielle, visibles dans \texttt{EC\_GLV.c} :
