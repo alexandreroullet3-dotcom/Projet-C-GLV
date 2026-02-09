@@ -174,6 +174,48 @@ int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E)
     return 0;
 }
 
+/*Tests d'appartenance*/
+// Retourne 0 si P n'est pas sur la courbe.
+// Retourne 1 si P est sur la courbe.
+int is_in_aff(const ECPointAffine *P, const ECCurve *E){
+    mpz_t t, s;
+    mpz_inits(t, s, NULL);
+    mpz_mul(s, P->x, P->x);
+    mpz_mul(t, s, P->x);
+    mpz_mul(s, s, E->a2);
+    mpz_add(t, s, t);
+    mpz_mul(P->x, P->x, E->a);
+    mpz_add(t, t, s);
+    mpz_add(t, t, E->b);
+    mpz_mod(t, t, E->p);
+    mpz_mul(s, P->y, P->y);
+    mpz_mod(s, s, E->p);
+    if (mpz_cmp(s, t)){
+        return 1;
+    }
+    return 0;
+}
+
+int is_in_proj(const ECPointProj *P, const ECCurve *E){
+    mpz_t t, s;
+    mpz_inits(t, s, NULL);
+    mpz_mul(s, P->X, P->X);
+    mpz_mul(t, s, P->X);
+    mpz_mul(s, s, E->a2);
+    mpz_add(t, s, t);
+    mpz_mul(P->x, P->x, E->a);
+    mpz_add(t, t, s);
+    mpz_add(t, t, E->b);
+    mpz_mod(t, t, E->p);
+    mpz_mul(s, P->y, P->y);
+    mpz_mod(s, s, E->p);
+    if (mpz_cmp(s, t)){
+        return 1;
+    }
+    return 0;
+}
+
+
 /*
  * =========================
  * Fonctions pour la courbe

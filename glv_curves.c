@@ -84,20 +84,22 @@ void init_secp256k1_curve(GLVCurve *curve)
 void init_example2_curve(GLVCurve *curve)
 {
     mpz_inits(curve->E.a, curve->E.b, curve->E.p, curve->n, curve->lambda, curve->beta, curve->E.a2, NULL);
-    mpz_set_str(curve->E.a, "2e818c97303c2c8e6ee49e2b6cacc754eff27e8346e4a23da9b7b882685b7c72", 16);
+    mpz_set_str(curve->E.a, "5d00518733d00bbff1eb8461f994c688e1230b843372b49515829a7ccbcaf04e", 16);
     mpz_set_ui(curve->E.b, 0);
-    mpz_set_str(curve->E.p, "b4fc23d83418e4d099141c1a435cbb663817e03477f8f84f3afd51e63e89ef31", 16);
-    mpz_set_str(curve->n, "b4fc23d83418e4d099141c1a435cbb67505e70fbe7dfa084bca52c64f59eca7a", 16);
+
+    // Ici on a n = h*r avec h=2, mais on ne fait GLV que sur le sous-groupe d'ordre r.
+    mpz_set_str(curve->E.p, "819b395e84dc993cb56563295dd41ddf3f3679adc076bcd2b50be89f583b511d", 16);
+    mpz_set_str(curve->n, "40cd9caf426e4c9e5ab2b194aeea0ef03b5024b0514a3c3c205cb23214f5f259", 16);
 
     ec_point_proj_init(&curve->P);
     ec_point_proj_init(&curve->phiP);
-    mpz_set_str(curve->P.X, "a3cf5403796bcb5f78979ac1eac261d7d7c5785a712d01a52519542c2e6f0dc6", 16);
-    mpz_set_str(curve->P.Y, "5a4073851f2f574df70c8c84906546b6ca76421fcc7db0901ffc77fa9a2ed540", 16);
+    mpz_set_str(curve->P.X, "924916153b530a9d5b459742ec5b797c47d4d7bcd53f8b2b8735011cac52d1b", 16);
+    mpz_set_str(curve->P.Y, "4068d45bb0b8e75b5ba5a22e340737d25acd6ae0570e2bf545f36d1d31cd709a", 16);
     mpz_set_ui(curve->P.Z, 1);
     curve->P.infinity = 0;
 
     // Initialiser lambda avant trouver_constantes_glv.
-    mpz_set_str(curve->lambda, "81e16b4d3131f1322cf0ab2ba439286b3962df578bf08b5dc04a37e1c8e31333", 16);
+    mpz_set_str(curve->lambda, "60a9f11a57b6d81a918bccc547e18eb730747c1c7262ee63025e410caf7b6357", 16);
     trouver_constantes_glv(curve->beta, &curve->E, &curve->P, curve->lambda, 2);
 
     calculer_phiP_optimise(curve, 2);

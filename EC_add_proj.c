@@ -7,9 +7,10 @@
  * =========================
  */
 void ec_point_double_proj(ECPointProj *R,
-                          const ECPointProj *P,
-                          const ECCurve *E)
+                         const ECPointProj *P,
+                         const ECCurve *E)
 {
+    /* Cas trivial : point à l’infini ou tangente verticale */
     if (P->infinity || mpz_cmp_ui(P->Y, 0) == 0) {
         R->infinity = 1;
         mpz_set_ui(R->Z, 0);
@@ -19,14 +20,16 @@ void ec_point_double_proj(ECPointProj *R,
     mpz_t Y2, S, M, Z2, Z4, tmp;
     mpz_inits(Y2, S, M, Z2, Z4, tmp, NULL);
 
+    /* =========================
+       Pré-calculs
+       ========================= */
+
     /* Y2 = Y^2 */
     mpz_mul(Y2, P->Y, P->Y);
-    mpz_mod(Y2, Y2, E->p);
 
     /* S = 4 X Y^2 */
     mpz_mul(S, P->X, Y2);
-    mpz_mul_ui(S, S, 4);
-    mpz_mod(S, S, E->p);
+    mpz_mul_2exp(S, S, 2);          /* *4 */
 
     /* Z2 = Z^2 */
     mpz_mul(Z2, P->Z, P->Z);
@@ -34,46 +37,69 @@ void ec_point_double_proj(ECPointProj *R,
     /* Z4 = Z^4 */
     mpz_mul(Z4, Z2, Z2);
 
-    /* M = 3X^2 */
+    /* =========================
+       M = 3X^2 + 2a2 X Z^2 + a Z^4
+       ========================= */
+
+    /* 3X^2 */
     mpz_mul(M, P->X, P->X);
     mpz_mul_ui(M, M, 3);
 
     /* + 2 a2 X Z^2 */
     mpz_mul(tmp, E->a2, P->X);
     mpz_mul(tmp, tmp, Z2);
-    mpz_mul_ui(tmp, tmp, 2);
+    mpz_mul_2exp(tmp, tmp, 1);      /* *2 */
     mpz_add(M, M, tmp);
 
     /* + a Z^4 */
     mpz_mul(tmp, E->a, Z4);
     mpz_add(M, M, tmp);
-    mpz_mod(M, M, E->p);
 
-    /* Z3 = 2 Y Z */
+    /* =========================
+       Z3 = 2 Y Z
+       ========================= */
+
     mpz_mul(R->Z, P->Y, P->Z);
-    mpz_mul_ui(R->Z, R->Z, 2);
-    mpz_mod(R->Z, R->Z, E->p);
+    mpz_mul_2exp(R->Z, R->Z, 1);    /* *2 */
 
-    /* X3 = M^2 − 2S − a2 Z3^2 */
+    /* =========================
+       X3 = M^2 − 2S − a2 Z3^2
+       ========================= */
+
+    /* M^2 */
     mpz_mul(R->X, M, M);
 
-    mpz_sub(R->X, R->X, S);
-    mpz_sub(R->X, R->X, S);
+    /* − 2S */
+    mpz_submul_ui(R->X, S, 2);
 
+    /* − a2 Z3^2 */
     mpz_mul(tmp, R->Z, R->Z);
     mpz_mul(tmp, tmp, E->a2);
     mpz_sub(R->X, R->X, tmp);
+
+    /* réduction modulo p */
     mpz_mod(R->X, R->X, E->p);
 
-    /* Y3 = M(S − X3) − 8Y^4 */
+    /* =========================
+       Y3 = M(S − X3) − 8Y^4
+       ========================= */
+
+    /* S − X3 */
     mpz_sub(tmp, S, R->X);
+
+    /* M(S − X3) */
     mpz_mul(tmp, tmp, M);
 
-    mpz_mul(Y2, Y2, Y2);      // Y^4
-    mpz_mul_ui(Y2, Y2, 8);
+    /* 8Y^4 */
+    mpz_mul(Y2, Y2, Y2);            /* Y^4 */
+    mpz_mul_2exp(Y2, Y2, 3);        /* *8 */
 
+    /* Y3 */
     mpz_sub(R->Y, tmp, Y2);
     mpz_mod(R->Y, R->Y, E->p);
+
+    /* réduction finale de Z */
+    mpz_mod(R->Z, R->Z, E->p);
 
     R->infinity = 0;
 

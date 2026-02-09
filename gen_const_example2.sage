@@ -1,20 +1,35 @@
-p = random_prime(2^256, lbound=2^255)
-while mod(p, 4) != 1:
+i = 1
+while i:
     p = random_prime(2^256, lbound=2^255)
+    if mod(p, 4) != 1:
+        continue
+    F = GF(p)
+    a = int(F.random_element())
+    E = EllipticCurve(F, [a, 0])
+
+    n = E.order()
+    fac = n.factor()
+
+    # on cherche un facteur premier ~256 bits
+    for q,e in fac:
+        if q.nbits() > 250 and q.is_prime():
+            r = q
+            h = n // r
+            if h <= 16  :
+                print("GOOD CURVE FOUND")
+                print("p =", hex(p))
+                print("r =", hex(r))
+                print("h =", h)
+                i = 0
 
 F = GF(p)
 
-a = int(F.random_element())
-E = EllipticCurve(F, [a, 0])
-
-n = E.order()
 
 P = E.random_point()
-while P.order() != n:
+while P.order() != r:
     P = E.random_point()
 
 print("a =", hex(a))
-print("p =", hex(p))
 print("n =", hex(n))
 print("P =", hex(P[0]),hex(P[1]), hex(P[2]))
 fac = n.factor()

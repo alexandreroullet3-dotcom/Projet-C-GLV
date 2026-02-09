@@ -94,6 +94,11 @@ int ec_cmp_affine(const ECPointAffine *P, const ECPointAffine *Q);
 /* Comparaison de deux points projectifs. */
 int ec_cmp_proj(const ECPointProj *P, const ECPointProj *Q, const ECCurve *E);
 
+/*Tests d'appartenance. */
+int is_in_aff(const ECPointAffine *P, const ECCurve *E);
+
+int is_in_proj(const ECPointProj *P, const ECCurve *E);
+
 /*
  * =========================
  * Gestion de la courbe
