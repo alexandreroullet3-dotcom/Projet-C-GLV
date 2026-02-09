@@ -83,7 +83,7 @@
         Ne pas considérer la courbe comme un groupe quelconque, mais exploiter ses propriétés géométriques (Endomorphismes).
     \end{block}
 
-    \textbf{Principe :} Décomposer le grand scalaire $k$ en deux "mini-scalaires" $k_1, k_2$ de taille moitié ($\approx 128$ bits).
+    \textbf{Principe :} Décomposer le grand scalaire $k$ en deux scalaires $k_1, k_2$ de taille moitié ($\approx 128$ bits).
     
     $$ k \cdot P = k_1 P + k_2 \phi(P) $$
 
@@ -115,7 +115,7 @@
         \column{0.48\textwidth}
         \begin{exampleblock}{Coordonnées Jacobiennes $(X:Y:Z)$}
             \begin{itemize}
-                \item $x = X/Z^2, y = Y/Z^3$.
+                \item Changement de variables $x = X/Z^2, y = Y/Z^3$.
                 \item \textbf{Aucune inversion} dans la boucle.
                 \item Réduit le coût du doublement.
             \end{itemize}
@@ -192,8 +192,8 @@
 \begin{frame}{Focus : La Complexité du Type 3}
     \textit{Une difficulté mathématique majeure rencontrée durant le projet.}
 
-    Pour les courbes de Type 3 ($D=7$), l'ordre $N$ n'est pas premier :
-    $$ N = h \cdot n \quad (\text{avec } h=4) $$
+    L'ordre $N$ n'est pas toujours premier :
+    $$ N = h \cdot n \quad \text{avec } h \text{ un cofacteur petit (typiquement, } h=2 \text{ ou } h=4)$$
     
     \begin{alertblock}{Conséquence critique}
         GLV ne fonctionne bien que sur le sous-groupe d'ordre premier $n$.
@@ -219,7 +219,7 @@
     \vspace{0.5cm}
     \textbf{Deux étapes clés :}
     \begin{enumerate}
-        \item Trouver une base courte du réseau (Pré-calcul).
+        \item Trouver une base de vecteurs court du réseau (Pré-calcul).
         \item Trouver les coefficients $k_1, k_2$ (Temps réel).
     \end{enumerate}
 \end{frame}
@@ -256,8 +256,8 @@
 \end{frame}
 
 \begin{frame}{Étape 2 : Décomposition de Babai (Rounding)}
-    Pour tout scalaire $k$, on résout le système approché :
-    $$ (k,0) \approx c_1 v_1 + c_2 v_2 $$
+    Pour tout scalaire $k$, on résout le système dans $\mathbb{Q}$ :
+    $$ (k,0) = c_1 v_1 + c_2 v_2 $$
     
     \textbf{Algorithme (O(1)) :}
     1. Calcul flottant des coefficients $c_1, c_2$ (Cramer).
@@ -309,7 +309,7 @@
         \item \textbf{Haut niveau :} \texttt{main.c}, \texttt{glv\_acceleration.c} (Benchmarks).
         \item \textbf{Logique GLV :} \texttt{glv\_decompose.c}, \texttt{short\_vectors.c}.
         \item \textbf{Moteur :} \texttt{double\_scalar\_multiplication.c}.
-        \item \textbf{Bas niveau :} \texttt{EC\_add\_proj.c} (Optimisé GMP).
+        \item \textbf{Bas niveau :} \texttt{EC\_add\_proj.c, EC\_struct.c} (Optimisé GMP).
     \end{itemize}
     
     \textit{Utilisation de SageMath en amont pour générer les constantes valides.}
