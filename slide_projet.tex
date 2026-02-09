@@ -392,7 +392,7 @@ for (i = len - 1; i >= 0; i--) {
         \begin{itemize}
             \item Pour chaque test, on calcule $Q_1 = kP$ (Méthode Classique).
             \item On calcule $Q_2 = kP$ (Méthode GLV).
-            \item \textbf{Succès si :} $Q_1 == Q_2$ (bit à bit).
+            \item \textbf{Succès si :} $Q_1 == Q_2$
         \end{itemize}
     \end{enumerate}
 \end{frame}
@@ -449,18 +449,6 @@ for (i = len - 1; i >= 0; i--) {
     \vspace{0.5cm}
     \begin{block}{Perspectives}
         Portage sur carte à puce (sans allocation dynamique) pour l'embarqué.
-    \end{block}
-\end{frame}
-
-\begin{frame}{Perspective : Joint Sparse Form (JSF)}
-    Pour aller plus loin que le fenêtrage ($w=2$), la littérature suggère la JSF.
-    
-    \textbf{Principe :}
-    Représentation binaire signée conjointe de $k_1$ et $k_2$ avec coefficients $\{-1, 0, 1\}$.
-    
-    \begin{block}{Gain théorique}
-        Réduit la densité des termes non-nuls de $0.75$ à $0.5$.
-        $\Rightarrow$ Encore moins d'additions de points, mais implémentation plus complexe.
     \end{block}
 \end{frame}
 
