@@ -184,7 +184,7 @@ int is_in_aff(const ECPointAffine *P, const ECCurve *E){
     mpz_mul(t, s, P->x);
     mpz_mul(s, s, E->a2);
     mpz_add(t, s, t);
-    mpz_mul(P->x, P->x, E->a);
+    mpz_mul(s, P->x, E->a);
     mpz_add(t, t, s);
     mpz_add(t, t, E->b);
     mpz_mod(t, t, E->p);
@@ -199,15 +199,33 @@ int is_in_aff(const ECPointAffine *P, const ECCurve *E){
 int is_in_proj(const ECPointProj *P, const ECCurve *E){
     mpz_t t, s;
     mpz_inits(t, s, NULL);
+
     mpz_mul(s, P->X, P->X);
     mpz_mul(t, s, P->X);
+
     mpz_mul(s, s, E->a2);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
     mpz_add(t, s, t);
-    mpz_mul(P->x, P->x, E->a);
+    
+    mpz_mul(s, P->X, E->a);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
     mpz_add(t, t, s);
-    mpz_add(t, t, E->b);
+
+    mpz_mul(t, P->Z, E->b);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+    mpz_mul(s, s, P->Z);
+
     mpz_mod(t, t, E->p);
-    mpz_mul(s, P->y, P->y);
+
+    mpz_mul(s, P->Y, P->Y);
+    mpz_mul(s, P->Y, P->Y);
     mpz_mod(s, s, E->p);
     if (mpz_cmp(s, t)){
         return 1;
