@@ -26,7 +26,7 @@
 }
 
 % --- Données ---
-\title[Méthode GLV]{Analyse Exhaustive et Implémentation de la Méthode GLV sur Courbes Elliptiques}
+\title[Méthode GLV]{Analyse et Implémentation de la Méthode GLV sur Courbes Elliptiques}
 \subtitle{Rapport Projet C} 
 
 \author[A. Roullet, B. Saudubray]{
@@ -117,7 +117,7 @@
             \begin{itemize}
                 \item $x = X/Z^2, y = Y/Z^3$.
                 \item \textbf{Aucune inversion} dans la boucle.
-                \item Coût du doublement réduit de $7M$ à $4M$.
+                \item Réduit le coût du doublement.
             \end{itemize}
         \end{exampleblock}
     \end{columns}
@@ -128,7 +128,7 @@
 % ------------------------------------------------
 \begin{frame}{Les Endomorphismes GLV ($\phi$)}
     \begin{block}{Définition}
-        Un endomorphisme est une application rationnelle $\phi : E \to E$ qui agit comme un scalaire $\lambda$ sur un sous-groupe :
+        Un endomorphisme est une application rationnelle $\phi : E \to E$. Restreint à un sous-groupe cyclique d'ordre $n$, $\phi$ agit comme la multiplication par $\lambda$ :
         $$ \phi(P) = \lambda P \quad \text{où } \lambda^2 - T\lambda + N \equiv 0 \pmod n $$
     \end{block}
 
@@ -173,9 +173,9 @@
     Ici, l'endomorphisme est une fraction rationnelle.
 
     \begin{alertblock}{Type 3 : Courbes avec $D=7$ (Implémenté)}
-        Défini sur $\mathbb{Q}(\sqrt{-7})$.
-        $$ \phi(x,y) = \left(\frac{x^2 - \xi}{\xi^2(x-a)}, \dots\right) $$
-        \textbf{Défi :} L'ordre $N$ n'est pas premier ($N=4r$). Nécessite une gestion fine du sous-groupe et un isomorphisme.
+        Défini sur $\mathbb{Q}(\sqrt{-7})$. $\zeta=(1+\sqrt{-7})/2,\, a=(\zeta-3)/4$
+        $$ \phi(x,y) = \left(\frac{x^2 - \xi}{\xi^2(x-a)}, \zeta^{-3}y\frac{x^2-2ax+\zeta}{(x-a)^2}\right) $$
+        \textbf{Défi :} L'ordre $N$ n'est pas premier ($N=4n$). GLV implémenté seulement sur le sous-groupe cyclique d'ordre $n$.
     \end{alertblock}
 
     \begin{exampleblock}{Type 4 : Courbes avec $D=8$ (Non Implémenté)}
@@ -193,12 +193,12 @@
     \textit{Une difficulté mathématique majeure rencontrée durant le projet.}
 
     Pour les courbes de Type 3 ($D=7$), l'ordre $N$ n'est pas premier :
-    $$ N = h \cdot r \quad (\text{avec } h=4) $$
+    $$ N = h \cdot n \quad (\text{avec } h=4) $$
     
     \begin{alertblock}{Conséquence critique}
-        GLV ne fonctionne bien que sur le sous-groupe d'ordre premier $r$.
+        GLV ne fonctionne bien que sur le sous-groupe d'ordre premier $n$.
         \begin{itemize}
-            \item Il faut travailler modulo $r$.
+            \item Il faut travailler modulo $n$.
             \item Le point $P$ doit être dans le sous-groupe (annuler le cofacteur).
         \end{itemize}
     \end{alertblock}
@@ -271,7 +271,7 @@
 \end{frame}
 
 \begin{frame}{L'Astuce de Shamir (Multi-exponentiation)}
-    Une fois $k$ décomposé, comment calculer $k_1P + k_2\phi(P)$ vite ?
+    Une fois $k$ décomposé, on a $kP=(k_1+k_2\lambda)P=k_1P + k_2\phi(P)$. Comment le calculer vite ?
     
     \begin{columns}
         \column{0.45\textwidth}
@@ -329,6 +329,7 @@ void clean_function(GLVCurve *curve) {
     mpz_clears(curve->n, curve->lambda, curve->beta, NULL);
     ec_point_proj_clear(&curve->P);
     ec_point_proj_clear(&curve->phiP);
+    ec_curve_clear(&curve->E);
     // Chaque init doit avoir son clear correspondant
 }
 \end{lstlisting}
@@ -381,7 +382,7 @@ for (i = len - 1; i >= 0; i--) {
     Avant de mesurer la performance, nous avons validé l'exactitude mathématique.
 
     \begin{enumerate}
-        \item \textbf{Génération des constantes :} Script SageMath pour trouver $\lambda$, $\beta$ et les vecteurs de base.
+        \item \textbf{Génération des constantes :} Script SageMath pour trouver des nombres premiers et des courbes elliptiques convenables, puis calcul de $\lambda$ et $\beta$.
         \item \textbf{Tests Unitaires en C :}
         \begin{itemize}
             \item Vérification que le point est sur la courbe ($Y^2 = X^3 + aX + b$).
@@ -392,7 +393,7 @@ for (i = len - 1; i >= 0; i--) {
         \begin{itemize}
             \item Pour chaque test, on calcule $Q_1 = kP$ (Méthode Classique).
             \item On calcule $Q_2 = kP$ (Méthode GLV).
-            \item \textbf{Succès si :} $Q_1 == Q_2$
+            \item \textbf{Succès si :} $Q_1 == Q_2$ (bit à bit).
         \end{itemize}
     \end{enumerate}
 \end{frame}
@@ -449,6 +450,18 @@ for (i = len - 1; i >= 0; i--) {
     \vspace{0.5cm}
     \begin{block}{Perspectives}
         Portage sur carte à puce (sans allocation dynamique) pour l'embarqué.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Perspective : Joint Sparse Form (JSF)}
+    Pour aller plus loin que le fenêtrage ($w=2$), la littérature suggère la JSF.
+    
+    \textbf{Principe :}
+    Représentation binaire signée conjointe de $k_1$ et $k_2$ avec coefficients $\{-1, 0, 1\}$.
+    
+    \begin{block}{Gain théorique}
+        Réduit la densité des termes non-nuls de $0.75$ à $0.5$.
+        $\Rightarrow$ Encore moins d'additions de points, mais implémentation plus complexe.
     \end{block}
 \end{frame}
 
