@@ -175,7 +175,6 @@
     \begin{alertblock}{Type 3 : Courbes avec $D=7$ (Implémenté)}
         Défini sur $\mathbb{Q}(\sqrt{-7})$. $\zeta=(1+\sqrt{-7})/2,\, a=(\zeta-3)/4$
         $$ \phi(x,y) = \left(\frac{x^2 - \xi}{\xi^2(x-a)}, \zeta^{-3}y\frac{x^2-2ax+\zeta}{(x-a)^2}\right) $$
-        \textbf{Défi :} L'ordre $N$ n'est pas premier ($N=4n$). GLV implémenté seulement sur le sous-groupe cyclique d'ordre $n$.
     \end{alertblock}
 
     \begin{exampleblock}{Type 4 : Courbes avec $D=8$ (Non Implémenté)}
@@ -219,7 +218,7 @@
     \vspace{0.5cm}
     \textbf{Deux étapes clés :}
     \begin{enumerate}
-        \item Trouver une base de vecteurs court du réseau (Pré-calcul).
+        \item Trouver une base de vecteurs court $v_1, v_2$ du réseau (Pré-calcul).
         \item Trouver les coefficients $k_1, k_2$ (Temps réel).
     \end{enumerate}
 \end{frame}
@@ -227,7 +226,6 @@
 \begin{frame}{Intuition Géométrique de la Décomposition}
     \begin{itemize}
         \item Le vecteur $(k, 0)$ est très loin de l'origine.
-        \item Le réseau $\mathcal{L}$ est engendré par $\{(n,0), (\lambda, 1)\}$.
         \item On cherche un vecteur $v \in \mathcal{L}$ très proche de $(k,0)$.
     \end{itemize}
 
@@ -244,8 +242,8 @@
     On utilise l'algorithme d'Euclide Étendu (EEA) sur $n$ et $\lambda$.
     
     \begin{itemize}
-        \item On génère une suite de restes $r_i$.
-        \item On s'arrête quand $r_i < \sqrt{n}$.
+        \item On génère une suite $s_i\cdot n+t_i\cdot\lambda=r_i$.
+        \item On s'arrête quand $r_m < \sqrt{n}$.
     \end{itemize}
 
     \begin{block}{Résultat}
@@ -351,7 +349,7 @@ for (i = len - 1; i >= 0; i--) {
 }
 \end{lstlisting}
 
-    \textbf{Compromis :} $w=2$ est optimal. Au-delà ($w=4$), le temps de pré-calcul de la table devient trop lourd.
+    \textbf{Compromis :} $w=2$ est optimal. Au-delà ($w\geq4$), le temps de pré-calcul de la table devient trop lourd.
 \end{frame}
 
 % ================================================
@@ -425,14 +423,14 @@ for (i = len - 1; i >= 0; i--) {
         $$ \text{Temps GLV} \approx 0.57 \times \text{Temps Classique} $$
     \end{block}
 
-    \textbf{Pourquoi pas 2.0x (100\%) ?}
-    \begin{itemize}
-        \item Coûts fixes : Conversion Affine $\to$ Projectif.
-        \item Overhead de Babai (arithmétique grands nombres).
-        \item Gestion mémoire dynamique (malloc/free) de GMP.
-    \end{itemize}
-    
-    \textit{Performance supérieure aux prédictions originales (approx. 50\%).}
+    \textbf{Pourquoi pas 2.0× ?}
+\begin{itemize}
+    \item 2.0× = borne théorique asymptotique (endomorphisme gratuit, pas d’overhead)
+    \item Coûts fixes : conversions + décomposition GLV (Babai)
+    \item Mémoire/cache : tables et accès > coût des additions
+    \item Précalculs pouvant être diminué 
+\end{itemize}
+
 \end{frame}
 
 % ================================================
@@ -444,26 +442,28 @@ for (i = len - 1; i >= 0; i--) {
     \begin{enumerate}
         \item \textbf{Implémentation Réussie :} Méthode GLV fonctionnelle sur des courbes simples et rationnelles (Type 3).
         \item \textbf{Optimisation Validée :} L'association GLV + Coordonnées Jacobiennes + Fenêtrage ($w=2$) offre le meilleur rendement.
-        \item \textbf{Robustesse :} Gestion mémoire sans fuite et rigueur mathématique (cofacteur géré).
+        \item \textbf{Robustesse :} Gestion mémoire sans fuite et rigueur mathématique.
     \end{enumerate}
 
     \vspace{0.5cm}
     \begin{block}{Perspectives}
-        Portage sur carte à puce (sans allocation dynamique) pour l'embarqué.
+        Amélioration de l'implémentation: utilisation de variables statiques pour ne pas faire d'initialisation dans des boucles.
+        
+        Resistance aux attaques (Timing Attacks, Differential Power Analysis...)
     \end{block}
 \end{frame}
 
-\begin{frame}{Perspective : Joint Sparse Form (JSF)}
-    Pour aller plus loin que le fenêtrage ($w=2$), la littérature suggère la JSF.
+%\begin{frame}{Perspective : Joint Sparse Form (JSF)}
+%    Pour aller plus loin que le fenêtrage ($w=2$), la littérature suggère la JSF.
     
-    \textbf{Principe :}
-    Représentation binaire signée conjointe de $k_1$ et $k_2$ avec coefficients $\{-1, 0, 1\}$.
+%    \textbf{Principe :}
+%    Représentation binaire signée conjointe de $k_1$ et $k_2$ avec coefficients $\{-1, 0, 1\}$.
     
-    \begin{block}{Gain théorique}
-        Réduit la densité des termes non-nuls de $0.75$ à $0.5$.
-        $\Rightarrow$ Encore moins d'additions de points, mais implémentation plus complexe.
-    \end{block}
-\end{frame}
+%    \begin{block}{Gain théorique}
+%        Réduit la densité des termes non-nuls de $0.75$ à $0.5$.
+%        $\Rightarrow$ Encore moins d'additions de points, mais implémentation plus complexe.
+%    \end{block}
+%\end{frame}
 
 \begin{frame}
     \begin{center}
