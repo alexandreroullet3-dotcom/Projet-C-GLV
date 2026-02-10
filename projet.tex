@@ -161,7 +161,7 @@
 
 \section{La Cryptographie sur Courbes Elliptiques (ECC)}
 La cryptographie asymétrique est un pilier de la sécurité numérique moderne. Depuis l'introduction de RSA, la recherche s'est orientée vers des systèmes offrant une sécurité équivalente pour des tailles de clés réduites. L'ECC (Elliptic Curve Cryptography), introduite indépendamment par Koblitz et Miller en 1985, répond à ce besoin.
-Une clé ECC de 256 bits offre une résistance comparable à une clé RSA de 3072 bits, rendant l'ECC idéale pour les environnements contraints en termes de mémoire (cartes à puces, IoT) et les protocoles haute performance (Blockchain, TLS 1.3).
+Une clé ECC de 256 bits offre une résistance comparable à une clé RSA de 3072 bits, rendant l'ECC idéale pour les environnements contraints en termes de mémoire (cartes à puces) et les protocoles haute performance (Blockchain).
 
 \section{Le Problème de la Multiplication Scalaire}
 L'opération centrale de l'ECC est la \textbf{multiplication scalaire}. Étant donné un point $P$ sur une courbe $E$ et un entier $k$ (le scalaire, souvent la clé privée), on cherche à calculer :
@@ -270,8 +270,8 @@ C'est cette différence massive sur le doublement qui rend les coordonnées Jaco
 
 
 \section{La Multiplication Complexe (CM)}
-La méthode GLV s'applique aux courbes définies sur un corps fini $\mathbb{F}_p$ dont l'anneau des endomorphismes est isomorphe à un ordre dans un corps quadratique imaginaire $\mathbb{Q}(\sqrt{-D})$.
-Concrètement, cela signifie qu'il existe une application non-triviale $\phi : E \to E$ qui est "rapide" à calculer et qui vérifie l'équation caractéristique :
+La méthode GLV s'applique aux courbes définies sur un corps fini $\mathbb{F}_p$ de cardinal $\#E(\mathbb{F}_p)=h\cdot n$, avec $n$ premier et $h$ un cofacteur petit ($h\leq 4$), où l'anneau des endomorphismes est isomorphe à un ordre dans un corps quadratique imaginaire $\mathbb{Q}(\sqrt{-D})$.
+Concrètement, cela signifie qu'il existe une application rationnelle non-triviale $\phi : E \to E$ qui est "rapide" à calculer et qui vérifie une équation caractéristique :
 \[ \phi^2 - T\phi + N = 0 \]
 Sur un sous-groupe d'ordre premier $n$, $\phi$ agit comme la multiplication par un entier $\lambda$ :
 \[ \phi(P) = \lambda P \quad \forall P \in E[n] \]
@@ -281,6 +281,10 @@ Sur un sous-groupe d'ordre premier $n$, $\phi$ agit comme la multiplication par 
 Dans le cas des endomorphismes simples ($D=3, 4$), ce coût est négligeable (1 multiplication).
 Pour les endomorphismes rationnels plus complexes ($D=7, 8$), bien que le calcul de $\phi(P)$ soit plus coûteux, il reste très inférieur au gain massif obtenu par la réduction de moitié du nombre de doublements (environ 128 opérations économisées pour une courbe de 256 bits).
 La méthode GLV demeure donc toujours performante.
+\end{remarque}
+
+\begin{remarque}
+    La condition $\#E(\mathbb{F}_p)=h\cdot n$ avec $n$ premier et $h$ un cofacteur petit, est nécéssaire pour des raisons de sécurité. On a besoin du $n$ le plus grand possible pour maximiser le cardinal du sous-groupe sur lequel on utilise GLV.
 \end{remarque}
 
 \newpage
@@ -309,8 +313,11 @@ C'est le cas le plus célèbre, utilisé notamment par la courbe \textbf{secp256
 Il est crucial de distinguer $\beta$ et $\lambda$ :
 \begin{itemize}
     \item $\beta$ est une constante du corps de base $\mathbb{F}_p$ utilisée pour calculer les nouvelles coordonnées.
-    \item $\lambda$ est l'entier correspondant dans le groupe scalaire.
+    \item $\lambda$ est l'entier vérifiant la même équation caractéristique dans le groupe $\mathbb{Z}/n\mathbb{Z}$.
 \end{itemize}
+
+En résumé, les points vivent dans un groupe cyclique d'ordre $n$, alors que leurs coordonées sont dans $\mathbb{F}_p$.
+
 L'intérêt de la méthode réside dans le fait que l'opération géométrique $(\beta x, y)$ ne coûte qu'une seule multiplication dans $\mathbb{F}_p$, remplaçant ainsi instantanément la multiplication par le grand scalaire $\lambda$.
 \end{remarque}
 
@@ -322,9 +329,6 @@ Ce cas concerne une famille spécifique de courbes elliptiques définies sur un 
     \item \textbf{Polynôme caractéristique :} $\lambda^2 + 1 \equiv 0 \pmod n$.
     \item \textbf{Calcul de $\lambda$ :} La valeur propre correspond à une racine carrée modulaire de $-1$, soit $\lambda \equiv \pm \sqrt{-1} \pmod n$.
 \end{itemize}
-
-
-\newpage
 
 
 \section{Cas Complexes (Endomorphismes Rationnels)}
@@ -339,7 +343,7 @@ L'endomorphisme est défini par :
 \begin{equation}
     \phi(x, y) = \left( \frac{x^2 - \xi}{\xi^2(x - a)}, \frac{y(x^2 - 2ax + \xi)}{\xi^3(x - a)^2} \right)
 \end{equation}
-Avec les constantes $\xi = \frac{-1 + \sqrt{-7}}{2}$ et $a = \frac{1 + \xi}{4}$.
+Avec les constantes $\xi = \frac{-1 + \sqrt{-7}}{2}$ et $a = \frac{\xi-3}{4}$.
 \begin{itemize}
     \item \textbf{Polynôme caractéristique :} $\lambda^2 - \lambda + 2 \equiv 0 \pmod n$.
 \end{itemize}
@@ -353,9 +357,9 @@ Soit $p > 3 $ un nombre premier tel que $-2$ soit un carré parfait dans $\mathb
 
 L'endomorphisme est défini par :
 \begin{equation}
-    \phi(x, y) = \left( \frac{-2x^2 + 4x + 9}{4(x+2)}, \quad \frac{-2x^2 + 8x - 1}{4\sqrt{-2}(x+2)^2} \cdot y \right)
+    \phi(x, y) = \left( \frac{-2x^2 + 4x + 9}{4(x+2)}, \quad \frac{-2x^2 + 8x - 1}{4\sqrt{-2}(x+2)^2} \cdot y \right),
 \end{equation}
-Note : Cette formule nécessite que $x \neq -2$. Le terme $\sqrt{-2}$ désigne une racine carrée de $-2$ fixée dans $\mathbb{F}_p$.
+où le terme $\sqrt{-2}$ désigne une racine carrée de $-2$ fixée dans $\mathbb{F}_p$.
 
 \begin{itemize}
     \item \textbf{Polynôme caractéristique :} $\lambda^2 + 2 \equiv 0 \pmod n$.
@@ -390,12 +394,12 @@ Considérons l'homomorphisme $f : \mathbb{Z}^2 \to \mathbb{Z}_n$ défini par $f(
 Le noyau de cet homomorphisme est un réseau $\mathcal{L}$ de dimension 2 :
 \[ \mathcal{L} = \{ (u, v) \in \mathbb{Z}^2 \mid u + v\lambda \equiv 0 \pmod n \} \]
 Le problème de la décomposition revient à trouver un vecteur $v \in \mathcal{L}$ qui soit le plus proche possible du vecteur cible $(k, 0)$.
-Si nous trouvons un tel $v$, alors le vecteur différence $u = (k, 0) - v $ sera court (sa norme euclidienne est petite), et par construction, si on note $u=(k_1, k_2),\, v= (v_1, v_2)$, on a :
-\[ k_1 + k_2\lambda \equiv (k - v_1) + (-v_2)\lambda \equiv k - (v_1 + v_2\lambda) \equiv k \pmod n \]
+Si nous trouvons un tel $v$, alors le vecteur différence $u = (k, 0) - v $ sera court (sa norme euclidienne est petite), et par construction, si on note $u=(k_1, k_2),\, v= (x, y)$, on a :
+\[ k_1 + k_2\lambda \equiv (k - x) + (-y)\lambda \equiv k - (x + y\lambda) \equiv k \pmod n \]
 
 \section{Étape 1 : Génération de la Base (Euclide Étendu)}
 Nous devons d'abord trouver une base de vecteurs courts $(v_1, v_2)$ pour le réseau $\mathcal{L}$.
-L'algorithme d'Euclide Étendu (EEA) appliqué à $n$ et $\lambda$ génère une suite de restes $r_i$ décroissants. Nous arrêtons l'algorithme lorsque le reste $r_i$ devient inférieur à $\sqrt{n}$.
+L'algorithme d'Euclide Étendu (EEA) appliqué à $n$ et $\lambda$ génère des suites telles que $$s_in+t_i\lambda=r_i,$$ avec la suite des restes $r_i$ strictement décroissants. Nous arrêtons l'algorithme lorsque le reste $r_i$ devient inférieur à $\sqrt{n}$.
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -426,7 +430,7 @@ r_{i+1} = r_{i-1} - q_i r_i, \quad 0 \le r_{i+1} < r_i.
 
 Ainsi, la suite \((r_i)_{i\ge0}\) est strictement décroissante et composée de nombres entiers non négatifs.  
 
-\textbf{Observation importante :} si $\gcd(n, \lambda) = d$, alors le dernier reste non nul de l'EEA vaut $d$. Dans la pratique GLV, on a toujours $\gcd(n, \lambda) = 1$, et la suite peut donc toujours descendre jusqu'à un reste $r_m < \sqrt{n}$.  
+\textbf{Observation importante :} si $\gcd(n, \lambda) = d$, alors le dernier reste non nul de l'EEA vaut $d$. Dans la pratique GLV, on a toujours $n$ premier, et la suite peut donc toujours descendre jusqu'à un reste $r_m < \sqrt{n}$.  
 
 Par conséquent, la boucle `while` terminera toujours.
 
@@ -451,9 +455,7 @@ r_i - t_i \lambda = n s_i \equiv 0 \pmod n \implies (r_i, -t_i) \in \mathcal{L}.
 \]
 car $|t_m| < r_m$ (propriété standard de l'EEA : les coefficients $t_i$ satisfont $|t_i| < r_{i-1}/r_i$).  
 
-- Pour le vecteur $v_2 = (r_{m-1}, -t_{m-1})$, on a $r_{m-1} > r_m$ mais $r_{m-1} < n$, donc la norme reste de l’ordre $O(\sqrt{n})$, même si l'argument heuristique.  
-
-Ainsi, les deux vecteurs sont courts pour la décomposition GLV.
+- Pour le vecteur $v_2 = (r_{m-1}, -t_{m-1})$, on a $r_{m-1} > r_m$ mais $r_{m-1} < n$. Dans la pratique la norme est toujours de l’ordre $\sqrt{n}$, sauf sur certains exemples pathologiques.
 
 \paragraph{3. Indépendance linéaire :} Par construction de l'EEA, $(r_m, r_{m-1})$ et $(t_m, t_{m-1})$ satisfont le relation de Bézout
 \[
@@ -476,7 +478,7 @@ Ils forment donc une base réduite appropriée pour la méthode GLV.
 
 \section{Étape 2 : Décomposition de Babai (Rounding)}
 Pour un scalaire $k$ donné à l'exécution, nous résolvons le CVP (Closest Vector Problem) approximatif dans le plan.
-On cherche $v = c_1 v_1 + c_2 v_2 \approx (k, 0)$.
+On cherche $v = c_1 v_1 + c_2 v_2 \approx (k, 0)$, le vecteur du réseau le plus proche.
 
 \subsection{Algorithme}
 1. Résolution dans $\mathbb{Q}$ : On résout le système linéaire $(k, 0) = c_1 v_1 + c_2 v_2$. Grâce à la règle de Cramer :
@@ -489,6 +491,24 @@ On cherche $v = c_1 v_1 + c_2 v_2 \approx (k, 0)$.
 \begin{theoreme}[Bornes de Babai]
 Les scalaires $k_1, k_2$ obtenus par cette méthode satisfont $|k_1|, |k_2| < \epsilon \sqrt{n}$ avec $\epsilon$ une petite constante dépendant de la géométrie du réseau (typiquement $\sqrt{1 + |\lambda|^2}$).
 \end{theoreme}
+
+\subsection{Algorithme}
+Maintenant le $k$ décomposé, la méthose naïve serait de calculer $k_1P$ et $k_2\phi(P)$ par exponentiation rapide puis d'additionner. Cette méthode ne donnerait aucun gain car nous ferions successivement 2 calculs prenant chacun 2 fois moins de temps. Plutôt, nous appliquons l'algorithme suivant dit \textit{Shamir's trick}, qui nous permet de paralléliser les calculs.
+\newline
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwData{$w$ paramètre de fenêtrage, $ k, \, l, \,P,\,Q,$ avec $k,l$ des entiers de $t$ bits}
+\KwResult{$kP+lQ$}
+Précalculer $iP+jQ$, pour $0\le i,j<2^w$\;
+Ecrire $k=(k_{d-1},\cdots,k_0), \,l=(l_{d-1},\cdots,l_0)$, où $k_i$ et $l_i$ sont des chaînes de $w$ bits et $d=\lceil t/w\rceil.$\;
+$R\leftarrow\mathcal{O}$\;
+\For{$i=d-1$ \textbf{downto} $0$}{
+    $R\leftarrow2^wR$\;
+    $R\leftarrow R+k^iP+l^jQ$\;
+}
+\caption{Calcul parallélisé de $kP+lQ$}
+\end{algorithm}
 
 \newpage
 
@@ -646,7 +666,7 @@ $\downarrow$
 % --- Couche 5 ---
 \fbox{
     \parbox{12cm}{\centering
-    \textbf{5. Noyau Arithmétique (GMP)} \\
+    \textbf{5. Noyau Arithmétique} \\
     \small \textit{Opérations de base (Add/Double) Affines \& Projectives} \\
     \texttt{EC\_add\_proj.c, EC\_square\_and\_multiply\_proj.c}}
 }
@@ -658,7 +678,7 @@ $\downarrow$
 \fbox{
     \parbox{12cm}{\centering
     \textbf{6. Structures informatiques (courbes, points) (GMP)} \\
-    \small \textit{Allocations, Désallocations, conversions Affines \& Projectives, Tests d'égalités} \\
+    \small \textit{Allocations, Désallocations, Conversions Affines \& Projectives, Tests d'égalités} \\
     \texttt{EC\_struct.c}}
 }
 
@@ -693,15 +713,11 @@ Cette approche garantit une complexité constante $O(1)$, rendant l'étape de d�
 
 \subsection{Multiplication Simultanée avec Fenêtrage (Interleaving w-ary)}
 L'optimisation la plus avancée du projet se trouve dans \texttt{double\_scalar\_multiplication.c}.
-Pour calculer la combinaison linéaire $k_1P + k_2Q$, nous n'effectuons pas deux multiplications séparées. Nous utilisons une méthode d'entrelacement (Interleaving) combinée à du \textbf{fenêtrage (Windowing)} de taille $w$. Le paramètre $w$ doit être choisi judicieusement, plus il est grand, moins la boucle principale aura d'itérations, mais plus le temps de précalcul sera long (empiriquement, $w=2$ donne la meilleur accélération).
+Pour calculer la combinaison linéaire $k_1P + k_2Q$, nous n'effectuons pas deux multiplications séparées. Nous utilisons une méthode d'entrelacement (Interleaving) combinée à du \textbf{fenêtrage (Windowing)} de taille $w$, présenté dans l'algorithme 2. Le paramètre $w$ doit être choisi judicieusement, plus il est grand, moins la boucle principale aura d'itérations, mais plus le temps de précalcul sera long (dans notre projet, $w=2$ donne la meilleur accélération).
 
-\begin{enumerate}
-    \item \textbf{Précalcul :} Une table $T$ est générée (dans \texttt{precompute\_table.c}) contenant les valeurs pré-calculées $uP + vQ$ pour toutes les combinaisons possibles de fenêtres $0 \le u, v < 2^w$.
-    \item \textbf{Boucle principale :} On parcourt les scalaires $k_1$ et $k_2$ par paquets de $w$ bits simultanément.
-    \item \textbf{Accumulation :} À chaque itération, on effectue $w$ doublements du point résultat, puis une seule addition avec la valeur pré-calculée correspondante tirée de la table $T$.
-\end{enumerate}
 
-Cette technique, souvent appelée \textit{Straus-Shamir optimization}, réduit considérablement le nombre d'additions de points nécessaires par rapport à la méthode binaire simple.
+
+\textbf{Note: } La meilleure amélioration de notre programme se trouve ici. Nous précalculons $iP+jQ$, pour $0\leq i,j<2^w$ soit une table de $2^{2w}$ éléments, mais il aurait été possible de seulement précalculer $iP$, pour $0\leq i<2^w$ puis d'utiliser que $jQ=j\phi(P)=\phi(jP)$. La table de precalcul aurait alors seulement $2^w$ éléments. Le choix optimale de $w$ serait alors $w=4$ ou 5. Nous avons remarqué cette optimisation seulement à la fin et n'avons pas eu le temps de l'implémenter.
 
 \subsection{Endomorphismes Efficaces}
 Le calcul de l'image $\phi(P)$ (le point $Q$) est implémenté nativement pour plusieurs types de courbes via \texttt{EC\_endo\_phi\_GLV.c}.
@@ -722,7 +738,7 @@ Les fichiers \texttt{gen\_const\_*.sage} agissent donc comme un oracle mathémat
 \begin{itemize}
     \item Ils génèrent des nombres premiers $p$ et des courbes elliptiques satisfaisant les conditions de sécurité cryptographique.
     \item Ils vérifient l'existence de l'endomorphisme $\phi$ et calculent les constantes critiques $\beta$ (racine de l'unité) et $\lambda$ (valeur propre).
-    \item Ils exportent ces paramètres sous forme de chaînes hexadécimales, qui sont ensuite "codées en dur" dans le fichier C \texttt{glv\_curves.c}.
+    \item Ils exportent ces paramètres sous forme de chaînes hexadécimales, qui sont ensuite "codées en dur" dans le fichier \texttt{glv\_curves.c}.
 \end{itemize}
 Cette approche permet de décharger le programme principal de la complexité de l'initialisation pour se concentrer uniquement sur la performance de la multiplication scalaire.
 
@@ -810,9 +826,10 @@ Nous observons une accélération moyenne stable entre les différents types, la
 Le speedup maximal atteint est $\approx1.76$, ce qui signifie que la méthode GLV est 76\% plus rapide que l'exponentiation rapide. 
 
 \subsection{Interprétation de la Performance}
-Le gain mesuré (1.76x) est excellent, bien que légèrement inférieur au facteur théorique (2.0x). Cette différence s'explique par les coûts fixes inhérents à notre architecture logicielle, visibles dans \texttt{EC\_GLV.c} :
+Le gain mesuré (1.76x) est excellent, bien qu'inférieur au facteur théorique (2.0x). Cette différence s'explique par les coûts fixes inhérents à notre architecture logicielle, visibles dans \texttt{EC\_GLV.c} :
 
 \begin{enumerate}
+    \item \textbf{Gain théorique :} Le facteur 2.0x est théorique et asymptotique. Il ne tient pas compte de la réalité physiques des processeurs.
     \item \textbf{Coût de conversion de coordonnées :} Pour appliquer l'endomorphisme $\phi(x,y) = (\beta x, y)$, nous convertissons le point P de projectif vers affine. Cette opération (\texttt{proj\_to\_affine}) implique une \textbf{inversion modulaire} (\texttt{mpz\_invert}), qui est une opération très coûteuse.
     \item \textbf{Overhead de la Décomposition :} L'algorithme de Babai (\texttt{glv\_nearest\_vector}) nécessite plusieurs multiplications de grands entiers avant même que la multiplication scalaire ne commence.
     \item \textbf{Gestion Mémoire GMP :} Contrairement à une implémentation sur carte à puce statique, l'utilisation de GMP impose des allocations dynamiques (\texttt{malloc}) et des initialisations (\texttt{mpz\_init}) à chaque appel de fonction, ce qui pèse sur le temps d'exécution global.
@@ -825,12 +842,8 @@ Malgré ces overheads, le gain reste massif, validant l'efficacité de la réduc
 Ce projet a permis d'explorer et d'implémenter la méthode de Gallant-Lambert-Vanstone (GLV) sur une courbe elliptique de type secp256k1 et sur d'autres types de courbes plus ou moins complexes. En structurant le code en couches modulaires, nous avons pu isoler la complexité mathématique (réduction de réseau, endomorphismes) pour nous concentrer sur l'optimisation du moteur arithmétique.
 
 Les résultats expérimentaux sont très satisfaisants :
-\begin{itemize}
-    \item Nous avons mesuré une accélération moyenne de \textbf{1.76x} (gain de 76\%) par rapport à la méthode classique.
-    \item Ce résultat dépasse les estimations prudentes des auteurs originaux (Gallant, Lambert, Vanstone, 2001) qui annonçaient une accélération d'environ 50\% (\textit{"roughly 50\% faster"}, soit un facteur 1.5x).
-\end{itemize}
 
-Cette performance supérieure aux prédictions s'explique par la synergie entre la décomposition GLV et notre implémentation de la méthode de \textbf{Shamir avec fenêtrage} ($w=2$). Là où la méthode GLV divise par deux la longueur de la boucle, le fenêtrage réduit encore le nombre d'additions intermédiaires.
+Nous avons mesuré une accélération moyenne de \textbf{1.76x} (gain de 76\%) par rapport à la méthode classique.
 
 Nous avons ainsi démontré que sur une architecture moderne, le surcoût des pré-calculs (Babai, tables) est largement compensé par le gain sur la multiplication scalaire. Pour aller plus loin, l'utilisation de la \textit{Joint Sparse Form} (JSF) pourrait être envisagée pour réduire l'empreinte mémoire, ou une implémentation en assembleur pour se rapprocher encore davantage de la limite théorique d'un facteur 2.0.
 
