@@ -743,9 +743,6 @@ Les fichiers \texttt{gen\_const\_*.sage} agissent donc comme un oracle mathémat
 Cette approche permet de décharger le programme principal de la complexité de l'initialisation pour se concentrer uniquement sur la performance de la multiplication scalaire.
 
 
-%%\subsection{Comparaison avec la JSF}
-%%Une alternative courante à la technique de \textit{Straus-Shamir} est la \textit{Joint Sparse Form} (JSF), qui recode les scalaires pour minimiser le nombre de colonnes non nulles. Bien que la JSF soit très efficace en mémoire (nécessitant peu de précalculs), notre approche par fenêtrage offre un compromis différent : elle utilise plus de mémoire pour stocker la table $T$, mais réduit le nombre d'opérations d'addition en traitant plusieurs bits à la fois, ce qui est particulièrement adapté aux architectures modernes disposant de cache suffisant.
-
 \newpage
 
 % ============================================================
